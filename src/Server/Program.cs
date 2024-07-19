@@ -1,13 +1,63 @@
+using System.Text.Json.Serialization;
+using Adeptik.Hosting.AspNet.Extensions.DependencyInjection;
+using Blazored.LocalStorage;
+using Microsoft.EntityFrameworkCore;
+using Seljmov.AspNet.Commons.Helpers;
+using Seljmov.AspNet.Commons.Options;
+using Server;
+using Server.ApiGroups;
+using Server.Options;
+using Server.Services.CodeSender;
+using Server.Services.JwtHelper;
+using Shared;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<TokenRepository>();
 
-// Configure the HTTP request pipeline.
+// var configurationOptionsSection = builder.Configuration.GetSection(nameof(ConfigurationOptions));
+// _ = configurationOptionsSection.Get<ConfigurationOptions>() 
+//     ?? throw new Exception("ConfigurationOptions is null.");
+//
+// builder.Services.AddOptions<ConfigurationOptions>().Bind(configurationOptionsSection);
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+builder.Services.AddDbContext<DatabaseContext>(options => options.UseNpgsql(connectionString));
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddOptions<ApplicationOptions>()
+    .Bind(builder.Configuration)
+    .ValidateDataAnnotations()
+    .ValidateOnStart()
+    .Expose(applicationOptions => applicationOptions.CodeTemplateOptions)
+    .Expose(applicationOptions => applicationOptions.SmtpClientOptions)
+    .Expose(applicationOptions => applicationOptions.JwtOptions);
+
+builder.Services.AddScoped<IJwtHelper, JwtHelper>();
+builder.Services.AddScoped<IEmailCodeSender, EmailSenderService>();
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+
+var app = builder.BuildWebApplication(
+    buildOptions: new BuildOptions
+    {
+        UseJwtAuthentication = false,
+        UseCors = true,
+    });
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -16,29 +66,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
+app.UseRouting();
 
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
+app.MapAuthGroup();
+//app.MapConfigurationGroup();
+
+app.MapRazorPages();
+app.MapControllers();
+app.MapFallbackToFile("index.html");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
