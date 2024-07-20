@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Adeptik.Hosting.AspNet.Extensions.DependencyInjection;
 using Blazored.LocalStorage;
+using Client.Auth;
 using Microsoft.EntityFrameworkCore;
 using Seljmov.AspNet.Commons.Helpers;
 using Seljmov.AspNet.Commons.Options;
@@ -9,7 +10,6 @@ using Server.ApiGroups;
 using Server.Options;
 using Server.Services.CodeSender;
 using Server.Services.JwtHelper;
-using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,12 +19,6 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<TokenRepository>();
-
-// var configurationOptionsSection = builder.Configuration.GetSection(nameof(ConfigurationOptions));
-// _ = configurationOptionsSection.Get<ConfigurationOptions>() 
-//     ?? throw new Exception("ConfigurationOptions is null.");
-//
-// builder.Services.AddOptions<ConfigurationOptions>().Bind(configurationOptionsSection);
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -43,7 +37,8 @@ builder.Services.AddOptions<ApplicationOptions>()
     .ValidateOnStart()
     .Expose(applicationOptions => applicationOptions.CodeTemplateOptions)
     .Expose(applicationOptions => applicationOptions.SmtpClientOptions)
-    .Expose(applicationOptions => applicationOptions.JwtOptions);
+    .Expose(applicationOptions => applicationOptions.JwtOptions)
+    .Expose(applicationOptions => applicationOptions.ConfigurationOptions);
 
 builder.Services.AddScoped<IJwtHelper, JwtHelper>();
 builder.Services.AddScoped<IEmailCodeSender, EmailSenderService>();
@@ -71,7 +66,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.MapAuthGroup();
-//app.MapConfigurationGroup();
+app.MapConfigurationGroup();
 
 app.MapRazorPages();
 app.MapControllers();

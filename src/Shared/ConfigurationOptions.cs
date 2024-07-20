@@ -6,12 +6,7 @@ namespace Shared;
 public class ConfigurationOptions
 {
     /// <summary>
-    /// Путь к серверу аутентификации.
+    /// Путь к серверу работы с пользователями.
     /// </summary>
-    public string AuthenticationServerUrl { get; set; } = string.Empty;
-    
-    /// <summary>
-    /// Путь к клиенту аутентификации.
-    /// </summary>
-    public string AuthenticationClientUrl { get; set; } = string.Empty;
+    public string UsersServerUrl { get; set; } = string.Empty;
 }

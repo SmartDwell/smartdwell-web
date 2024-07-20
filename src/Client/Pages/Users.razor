@@ -1,0 +1,73 @@
+@page "/users"
+
+@attribute [Authorize(Policy = AuthPolicies.UsersPolicy)]
+
+@using Client.Auth
+@using Contracts.Users
+@using Microsoft.AspNetCore.Authorization
+@using Seljmov.Blazor.Identity.Shared
+@inject AuthHttpClientFactory AuthHttpClientFactory
+
+@if (_loading)
+{
+    <p><em>Empty...</em></p>
+    <button @onclick="@LoadUserData">Load</button>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Идентификатор</th>
+            <th>Телефон</th>
+            <th>Электронная почта</th>
+            <th>Имя</th>
+            <th>Фамилия</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var user in _users)
+        {
+            <tr>
+                <td>@user.Id</td>
+                <td>@user.Phone</td>
+                <td>@user.Email</td>
+                <td>@user.Name</td>
+                <td>@user.Surname</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private bool _loading = true;
+    private HttpClient _client;
+    private IList<UserDto> _users = new List<UserDto>();
+
+    protected override void OnInitialized()
+    {
+        _client = AuthHttpClientFactory.CreateUsersClient();
+        base.OnInitialized();
+    }
+    
+    private async Task LoadUserData()
+    {
+        _loading = true;
+        try
+        {
+            var url = $"api/users";
+            var response = await _client.GetAsync(url);
+            if (response is not null)
+            {
+                _users = await response.Content.ReadFromJsonAsync<IList<UserDto>>();
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        _loading = false;
+        StateHasChanged();
+    }
+}

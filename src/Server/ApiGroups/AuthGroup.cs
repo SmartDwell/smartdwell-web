@@ -1,5 +1,5 @@
 using System.Text;
-using Client.Shared;
+using Contracts.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
