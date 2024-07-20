@@ -1,6 +1,5 @@
 using System.Net.Http.Json;
 using Contracts.Auth;
-using Shared;
 
 namespace Client.Auth;
 

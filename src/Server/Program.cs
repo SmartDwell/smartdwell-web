@@ -1,7 +1,5 @@
 using System.Text.Json.Serialization;
 using Adeptik.Hosting.AspNet.Extensions.DependencyInjection;
-using Blazored.LocalStorage;
-using Client.Auth;
 using Microsoft.EntityFrameworkCore;
 using Seljmov.AspNet.Commons.Helpers;
 using Seljmov.AspNet.Commons.Options;
@@ -16,9 +14,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddScoped<TokenRepository>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

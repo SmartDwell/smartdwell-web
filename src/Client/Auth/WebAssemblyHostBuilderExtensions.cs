@@ -50,7 +50,7 @@ public static class WebAssemblyHostBuilderExtensions
 
         builder.Services.AddAuthorizationCore(options =>
         {
-            foreach (var policy in AuthPolicies.AllPolicies.Concat(["123"]))
+            foreach (var policy in AuthPolicies.AllPolicies)
             {
                 options.AddPolicy(policy, policyBuilder =>
                 {

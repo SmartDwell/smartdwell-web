@@ -1,7 +1,6 @@
 using System.Net.Http.Json;
 using Contracts.Auth;
 using Microsoft.AspNetCore.Components;
-using Shared;
 
 namespace Client.Auth;
 
