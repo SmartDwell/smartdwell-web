@@ -49,12 +49,13 @@ public class JwtHelper : IJwtHelper
     /// <inheritdoc cref="IJwtHelper.CreateAccessToken(User, int, string?)" />
     public string CreateAccessToken(User user, int minutesValid, string? deviceDescription = "")
     {
+        var rolePolicies = string.Join(",", user.Role.Policies);
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Name),
             new Claim(ClaimTypes.Surname, user.Surname),
-            new Claim(ClaimTypes.Role, string.Join(",", user.Role.Policies)),
+            new Claim(ClaimTypes.Role, $"{user.Role.Name};{rolePolicies}"),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.MobilePhone, user.Phone),
             new Claim(ClaimTypes.System, deviceDescription ?? string.Empty),

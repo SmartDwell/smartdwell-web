@@ -5,21 +5,22 @@ body {
     font-family: Arial, sans-serif;
 }
 
-header {
-    height: 80px;
+header[b-tmopy668it] {
+    height: var(--header-height);
     flex-direction: row;
     align-items: center;
-    padding: 10px;
-    background-color: #333;
-    color: #fff;
+    padding: 0 16px;
+    background-color: var(--light-background-secondary);
+    color: var(--light-text-color);
     justify-content: space-between;
+    border-radius: 12px;
 }
 
 .header-base {
     display: flex;
 }
 
-.header-toggled {
+.header-mobile {
     display: none;
 }
 
@@ -27,7 +28,7 @@ header {
     display: none;
     background: none;
     border: none;
-    color: #fff;
+    color: var(--light-text-color);
     font-size: 24px;
     cursor: pointer;
 }
@@ -37,16 +38,15 @@ header {
 }
 
 .sidebar-wrapper {
+    width: var(--sidebar-width);
     display: flex; 
     flex-direction: column;
+    padding: 20px;
 }
 
 .sidebar {
-    width: 250px;
-    height: calc(100vh - 80px);
-    background-color: #444;
-    color: #fff;
-    padding: 15px;
+    height: calc(100vh - var(--header-height));
+    color: var(--light-text-color);
     transition: transform 0.3s ease, margin-left 0.3s ease;
 }
 
@@ -60,7 +60,6 @@ header {
 }
 
 .sidebar ul li a {
-    color: #fff;
     text-decoration: none;
 }
 
@@ -69,19 +68,29 @@ header {
     display: flex; 
     flex-direction: column;
     transition: transform 0.3s ease, margin-left 0.3s ease;
+    padding: 20px;
+    padding-left: 0;
 }
 
 @media (max-width: 760px) {
+    .sidebar-wrapper {
+        padding: 0;
+    }
+    
     .header-base {
         display: none;
     }
 
-    .header-toggled {
+    .header-mobile {
         width: 100%;
-        height: 60px;
+        height: var(--header-height-mobile);
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+    }
+
+    .header-mobile svg {
+        height: 60px;
     }
     
     .burger {
@@ -101,10 +110,11 @@ header {
     }
 
     .content {
+        padding: 20px;
         transform: translateX(0);
     }
     
     .content.shifted {
-        transform: translateX(250px);
+        transform: translateX(var(--sidebar-width));
     }
 }

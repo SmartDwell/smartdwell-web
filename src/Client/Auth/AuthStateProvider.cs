@@ -47,6 +47,11 @@ public class AuthStateProvider : AuthenticationStateProvider
     public string Fullname => $"{_user?.Name} {_user?.Surname}".Trim();
 
     /// <summary>
+    /// Роль пользователя.
+    /// </summary>
+    public string Role => _user?.Role ?? string.Empty;
+    
+    /// <summary>
     /// Инициалы пользователя.
     /// </summary>
     public string Initials => $"{_user?.Name[0]}{_user?.Surname[0]}".Trim();
@@ -80,8 +85,9 @@ public class AuthStateProvider : AuthenticationStateProvider
         var id = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
         var name = principal.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty;
         var surname = principal.FindFirst(ClaimTypes.Surname)?.Value ?? string.Empty;
+        var role = (principal.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty).Split(";").FirstOrDefault() ?? string.Empty;
         
-        _user = new User (id, name, surname, accessToken, refreshToken, principal);
+        _user = new User (id, name, surname, role, accessToken, refreshToken, principal);
         await _tokenRepository.SetTokensAsync(accessToken, refreshToken);
         
         NotifyAuthenticationStateChanged(Task.FromResult(GetState()));
@@ -137,5 +143,12 @@ public class AuthStateProvider : AuthenticationStateProvider
         return new ClaimsPrincipal(new[] { claimIdentity });
     }
     
-    private record User(string Id, string Name, string Surname, string AccessToken, string RefreshToken, ClaimsPrincipal ClaimsPrincipal);
+    private record User(
+        string Id, 
+        string Name, 
+        string Surname, 
+        string Role, 
+        string AccessToken, 
+        string RefreshToken, 
+        ClaimsPrincipal ClaimsPrincipal);
 }
