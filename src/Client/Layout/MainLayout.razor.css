@@ -74,6 +74,7 @@ header[b-tmopy668it] {
 
 @media (max-width: 760px) {
     .sidebar-wrapper {
+        width: 0;
         padding: 0;
     }
     
