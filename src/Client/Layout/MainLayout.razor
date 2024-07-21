@@ -1,16 +1,41 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
+@inject IJSRuntime JsRuntime
+
+<div style="display: flex;">
+    <div class="sidebar-wrapper">
+        <header class="header-base">
+            <h1>My Website</h1>
+        </header>
+        <nav id="sidebar" class="sidebar">
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Services</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
     </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
+    <div class="content">
+        <header class="header-toggled">
+            <button id="menuToggle" class="burger">
+                ☰
+            </button>
+            <h1>My Website</h1>
+            <div></div>
+        </header>
+        <main>
             @Body
-        </article>
-    </main>
+        </main>
+    </div>
 </div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("initMenuToggle");
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}
