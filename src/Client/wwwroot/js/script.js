@@ -8,3 +8,7 @@ window.initMenuToggle = () => {
     content.classList.toggle('shifted');
   });
 };
+
+window.getCurrentUrl = () => {
+  return window.location.pathname;
+}
