@@ -1,0 +1,20 @@
+@using Client.Auth
+@inject AuthFlow AuthFlow
+@inject AuthStateProvider StateProvider
+
+<div class="profile-card">
+    <div class="avatar">
+        @StateProvider.Initials
+    </div>
+    <div class="profile-info">
+        <div class="text-headline-small profile-name">
+            @StateProvider.Fullname
+        </div>
+        <div class="text-body profile-role">
+            @StateProvider.Role
+        </div>
+    </div>
+    <div class="logout-icon" @onclick="_ => AuthFlow.Logout()">
+        <LogoutIcon />
+    </div>
+</div>

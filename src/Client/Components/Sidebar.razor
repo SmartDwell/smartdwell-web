@@ -1,0 +1,76 @@
+@inject IJSRuntime JsRuntime
+
+<div class="sidebar-wrapper">
+    <header class="header-base">
+        <ProfileCard />
+    </header>
+    <nav id="sidebar" class="sidebar">
+        @foreach (var (category, items) in _sidebarItems)
+        {
+            <div class="sidebar-list">
+                <div class="sidebar-list-title">
+                    @category
+                </div>
+                @foreach (var item in items)
+                {
+                    <a href="@item.Url" class="sidebar-list-item @(_pickedItemUrl == item.Url ? "active" : "")" 
+                       @onclick="_ => _pickedItemUrl = item.Url">
+                        <span class="sidebar-icon @item.Icon" aria-hidden="true"></span>
+                        <span>@item.Title</span>
+                    </a>
+                }
+            </div>
+        }
+    </nav>
+</div>
+
+@code {
+    private string _pickedItemUrl = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var urlsDuplicates = _sidebarItems.SelectMany(pair => pair.Value.Select(item => item.Url)).GroupBy(url => url)
+            .Where(group => group.Count() > 1).Select(group => group.Key).ToList();
+        if (urlsDuplicates.Any())
+        {
+            throw new InvalidOperationException($"Urls duplicates: {string.Join(", ", urlsDuplicates)}");
+        }
+        
+        var url = await JsRuntime.InvokeAsync<string>("getCurrentUrl");
+        var paths = url.Split("/").Where(str => !string.IsNullOrEmpty(str)).ToList();
+
+        (int count, string url) maxMatch = (0, string.Empty);
+        foreach (var itemUrl in _sidebarItems.SelectMany(pair => pair.Value.Select(item => item.Url)))
+        {
+            var itemPaths = itemUrl.Split("/").Where(str => !string.IsNullOrEmpty(str));
+            var matches = paths.Zip(itemPaths).TakeWhile(pair => pair.First == pair.Second).Count();
+            if (matches > maxMatch.count)
+            {
+                maxMatch = (matches, itemUrl);
+            }
+        }
+        
+        _pickedItemUrl = maxMatch.url;
+        
+        await base.OnInitializedAsync();
+    }
+
+    #region Data
+    
+    private readonly Dictionary<string, IEnumerable<SidebarItem>> _sidebarItems = new()
+    {
+        {
+            "Пользователи",
+            new List<SidebarItem>
+            {
+                new("Сотрудники", "sidebar-employees-icon", "employees"),
+                new("Жильцы", "sidebar-citizens-icon", "users"),
+                new("Собственность жильцов", "sidebar-ownership-icon", "users/ownership")
+            }
+        }
+    };
+    
+    private record SidebarItem(string Title, string Icon, string Url);
+
+    #endregion
+}
