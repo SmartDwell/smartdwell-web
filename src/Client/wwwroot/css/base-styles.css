@@ -2,12 +2,23 @@
     --light-background: #F2F2F7;
     --light-background-secondary: #FFFFFF;
 
+    --primary-color-lighter: rgba(114, 112, 244, 0.2);
+    --primary-color-light: rgba(114, 112, 244, 0.5);
     --primary-color: rgba(114, 112, 244, 1);
+    --primary-color-dark: rgba(114, 112, 244, 0.8);
+    --primary-color-darken: rgba(100, 98, 220, 1);
+    
     --primary-color75: rgba(114, 112, 244, 0.75);
     --primary-color50: rgba(114, 112, 244, 0.50);
     --primary-color25: rgba(114, 112, 244, 0.25);
     --primary-color15: rgba(114, 112, 244, 0.15);
     --primary-color-dark: rgb(105, 103, 227);
+
+    --rz-primary: var(--primary-color);
+    --rz-primary-light: var(--primary-color-light);
+    --rz-primary-lighter: var(--primary-color-lighter);
+    --rz-primary-dark: var(--primary-color-dark);
+    --rz-primary-darker: var(--primary-color-darken);
     
     --light-text-color: rgba(28, 28, 30, 1);
     --light-text-color83: rgba(28, 28, 30, 0.83);
@@ -26,6 +37,7 @@
     --weight-bold: 700;
     
     --base-radius: 8px;
+    --base-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -49,4 +61,28 @@ body {
     font-size: 14px;
     font-weight: var(--weight-regular);
     color: var(--light-text-color);
+}
+
+.spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-width: 0.15em;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #2D2D2D40;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #2D2D2D60;
 }

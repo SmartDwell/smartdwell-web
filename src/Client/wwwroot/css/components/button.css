@@ -1,0 +1,67 @@
+.sd-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: var(--base-radius);
+    font-weight: var(--weight-medium);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.sd-button-large {
+    padding: 12px 24px;
+}
+
+.sd-button-medium {
+    padding: 8px 20px;
+}
+
+.sd-button-small {
+    padding: 6px 6px;
+}
+
+.sd-button-primary {
+    background-color: var(--primary-color);
+    color: white;
+    fill: white;
+}
+
+.sd-button-primary:not(.sd-button-disabled):hover {
+    background-color: var(--primary-color-dark);
+    color: white;
+    fill: white;
+}
+
+.sd-outline-button {
+    background-color: transparent;
+}
+
+.sd-outline-button-primary {
+    color: var(--primary-color) !important;
+    fill: var(--primary-color) !important;
+}
+
+.sd-button-icon {
+    margin-right: 10px;
+}
+
+.sd-button-disabled {
+    opacity: 0.75;
+}
+
+.sd-button-icon-center {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+}
+
+.sd-button .loader {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+.sd-button-primary .loader {
+    border: 2px solid #fff !important;
+}

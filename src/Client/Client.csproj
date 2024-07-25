@@ -12,12 +12,18 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.7"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.7" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+        <PackageReference Include="Radzen.Blazor" Version="5.0.2" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.0-preview1" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Contracts\Contracts.csproj" />
       <ProjectReference Include="..\Shared\Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Shared\UI\Icons\LogoutIcon.razor" />
+      <AdditionalFiles Include="Shared\UI\Icons\SmartDwellLogo.razor" />
     </ItemGroup>
 
 </Project>
