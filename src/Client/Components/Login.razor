@@ -3,35 +3,71 @@
 @inject NavigationManager Navigation
 @inject AuthService AuthService
 
-<div style="display: flex; flex-direction: column;">
-    <div>
-        @if (string.IsNullOrEmpty(_verifyCodeDto.TicketId))
+<div class="login-wrapper">
+    <div class="login-card card d-flex flex-column">
+        <div class="d-flex flex-column">
+            @if (string.IsNullOrEmpty(_verifyCodeDto.TicketId))
+            {
+                <h2>
+                    Введите вашу почту или номер телефона.
+                </h2>
+                <p>
+                    На ваш адрес электронной почты или номер телефона придет смс-код для входа в приложение.
+                </p>
+                <RadzenTemplateForm TItem="AuthRequestCodeDto" Data="@_requestCodeDto" Submit="@(_ => RequestCode())" class="d-flex flex-column">
+                    <RadzenTextBox Style="width: 100%" Placeholder="Почта или номер телефона" @bind-Value="_requestCodeDto.Login" />
+                    <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Disabled="@_isLoading" Style="margin-top: 1rem;">
+                        <ChildContent>
+                            @if (_isLoading)
+                            {
+                                <div class="spinner-border text-light" role="status"></div>
+                            }
+                            else
+                            {
+                                <span>Продолжить</span>
+                            }
+                        </ChildContent>
+                    </RadzenButton>
+                </RadzenTemplateForm>
+            }
+            else
+            {
+                <h2>
+                    @if (!string.IsNullOrEmpty(_name))
+                    {
+                    <span>
+                            Здравствуйте, @_name!
+                        </span> <br/>
+                    }
+                    Подтвердите смс-код.
+                </h2>
+                <p>
+                    Вам был отправлен смс-код. Введите его для подтверждения личности.
+                </p>
+                <RadzenTemplateForm TItem="AuthVerifyCodeDto" Data="@_verifyCodeDto" Submit="@(_ => VerifyCode())" class="d-flex flex-column">
+                    <RadzenSecurityCode @bind-Value="@_verifyCodeDto.Code" Count="6" Gap="0.5rem" />
+                    <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Disabled="@_isLoading" Style="margin-top: 1rem;">
+                        <ChildContent>
+                            @if (_isLoading)
+                            {
+                                <div class="spinner-border text-light" role="status"></div>
+                            }
+                            else
+                            {
+                                <span>Войти</span>
+                            }
+                        </ChildContent>
+                    </RadzenButton>
+                </RadzenTemplateForm>
+            }
+        </div>
+        @if (!string.IsNullOrEmpty(_errorMessages))
         {
-            <EditForm Model="_requestCodeDto" OnValidSubmit="@RequestCode">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
-
-                <InputText @bind-Value="_requestCodeDto.Login" placeholder="Login" />
-                <button type="submit">Request code</button>
-            </EditForm>
-        }
-        else
-        {
-            <EditForm Model="_verifyCodeDto" OnValidSubmit="@VerifyCode">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
-
-                <InputText @bind-Value="_verifyCodeDto.Code" placeholder="Code" />
-                <button type="submit">Verify code</button>
-            </EditForm>
-        }
-    </div>
-    @if (!string.IsNullOrEmpty(_errorMessages))
-    {
-        <div>
+        <div class="login-error-block">
             <p>@_errorMessages</p>
         </div>
-    }
+        }
+    </div>
 </div>
 
 @code {
@@ -43,6 +79,9 @@
         Login = "17moron@bk.ru",
     };
     private AuthVerifyCodeDto _verifyCodeDto = new();
+    
+    private bool _isLoading = false;
+    private string _name = string.Empty;
     private string _errorMessages = string.Empty;
 
     protected override void OnAfterRender(bool firstRender)
@@ -58,6 +97,7 @@
 
     private async Task RequestCode()
     {
+        _isLoading = true;
         _errorMessages = string.Empty;
         try
         {
@@ -66,11 +106,16 @@
             {
                 TicketId = ticketDto.TicketId,
             };
+            _name = ticketDto.Name;
         }
         catch (Exception e)
         {
             _errorMessages = e.Message;
             Console.WriteLine(e);
+        }
+        finally
+        {
+            _isLoading = false;
         }
         
         StateHasChanged();
@@ -78,6 +123,7 @@
 
     private async Task VerifyCode()
     {
+        _isLoading = true;
         _errorMessages = string.Empty;
         try
         {
@@ -96,6 +142,10 @@
         {
             _errorMessages = e.Message;
             Console.WriteLine(e);
+        }
+        finally
+        {
+            _isLoading = false;
         }
         
         StateHasChanged();

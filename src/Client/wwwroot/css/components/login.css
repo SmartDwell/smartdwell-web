@@ -1,0 +1,33 @@
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 480px;
+
+    margin: auto;
+    padding: 20px;
+
+    border-radius: var(--base-radius);
+    box-shadow: var(--base-shadow);
+}
+
+.login-error-block {
+    height: 80px;
+    
+    font-size: 12px;
+    color: var(--bs-danger);
+    
+    margin-top: .5rem;
+    overflow: auto;
+}
+
+@media (max-width: 760px) {
+    .login-card {
+        max-width: 400px;
+    }
+}
