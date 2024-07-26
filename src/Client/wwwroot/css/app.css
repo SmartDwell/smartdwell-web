@@ -2,5 +2,7 @@
 @import "blazor-default.css";
 @import "radzen-overrides.css";
 
+@import "components/users.css";
+
 @import "components/login.css";
 @import "components/sidebar.css";

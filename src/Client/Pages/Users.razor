@@ -9,64 +9,80 @@
 
 @if (_loading)
 {
-    <p><em>Empty...</em></p>
-    <button @onclick="@LoadUserData">Load</button>
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
 }
 else
 {
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Идентификатор</th>
-            <th>Телефон</th>
-            <th>Электронная почта</th>
-            <th>Имя</th>
-            <th>Фамилия</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var user in _users)
-        {
-            <tr>
-                <td>@user.Id</td>
-                <td>@user.Phone</td>
-                <td>@user.Email</td>
-                <td>@user.Name</td>
-                <td>@user.Surname</td>
-            </tr>
-        }
-        </tbody>
-    </table>
+    <div class="users-panel">
+        <div class="users-list">
+            @foreach(var (role, users) in _users)
+            {
+                <div class="role-panel">
+                    <h2 class="text-headline-small">
+                        @role
+                    </h2>
+                    <div class="role-users">
+                        @foreach(var user in users)
+                        {
+                            <div class="user-card">
+                                <div class="user-name">
+                                    @user.FullName
+                                </div>
+                                <div class="user-info">
+                                    <span>
+                                        @user.MaskedPhone
+                                    </span>
+                                    &nbsp;•&nbsp;
+                                    <span>
+                                        @user.Email
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="user-create-panel">
+            
+        </div>
+    </div>
 }
 
 @code {
     private bool _loading = true;
-    private HttpClient _client;
-    private IList<UserDto> _users = new List<UserDto>();
+    private HttpClient _client = default!;
+    private Dictionary<string, List<UserDto>> _users = [];
 
     protected override void OnInitialized()
     {
         _client = AuthHttpClientFactory.CreateUsersClient();
         base.OnInitialized();
     }
-    
-    private async Task LoadUserData()
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _loading = true;
+            var users = await LoadUserData();
+            _users = users.GroupBy(user => user.Role).ToDictionary(group => group.Key, group => group.ToList());
+            _loading = false;
+            StateHasChanged();
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task<List<UserDto>> LoadUserData()
     {
         _loading = true;
-        try
-        {
-            var url = $"api/users";
-            var response = await _client.GetAsync(url);
-            if (response is not null)
-            {
-                _users = await response.Content.ReadFromJsonAsync<IList<UserDto>>();
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-        _loading = false;
-        StateHasChanged();
+        const string url = $"api/users";
+        
+        var response = await _client.GetAsync(url);
+        return await response.Content.ReadFromJsonAsync<List<UserDto>>() ?? [];
     }
 }

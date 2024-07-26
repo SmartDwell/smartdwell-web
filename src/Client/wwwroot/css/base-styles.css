@@ -14,6 +14,9 @@
     --primary-color15: rgba(114, 112, 244, 0.15);
     --primary-color-dark: rgb(105, 103, 227);
 
+    --bs-primary: var(--primary-color);
+    --bs-primary-rgb: 114, 112, 244;
+    
     --rz-primary: var(--primary-color);
     --rz-primary-light: var(--primary-color-light);
     --rz-primary-lighter: var(--primary-color-lighter);
@@ -45,6 +48,12 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+/**:focus {*/
+/*    outline: 2px solid var(--primary-color);*/
+/*    outline-offset: 4px;*/
+/*    border-radius: 8px;*/
+/*}*/
 
 body {
     font-family: 'Ubuntu', sans-serif;

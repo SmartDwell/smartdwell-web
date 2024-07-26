@@ -1,0 +1,52 @@
+.users-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.users-list {
+    display: grid;
+    gap: 2.5rem;
+}
+
+.role-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.role-users {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0 1rem;
+}
+
+.user-card:not(:last-child) {
+    padding-bottom: 1rem;
+}
+
+.user-name {
+    font-size: 1rem;
+    font-weight: var(--weight-medium);
+    color: var(--primary-color);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: row;
+    font-size: 0.75rem;
+}
+
+@media (max-width: 760px) {
+    .users-panel {
+        display: flex;
+    }
+    
+    .user-create-panel {
+        display: none;   
+    }
+}
