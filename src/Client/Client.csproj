@@ -21,9 +21,4 @@
       <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <AdditionalFiles Include="Shared\UI\Icons\LogoutIcon.razor" />
-      <AdditionalFiles Include="Shared\UI\Icons\SmartDwellLogo.razor" />
-    </ItemGroup>
-
 </Project>
