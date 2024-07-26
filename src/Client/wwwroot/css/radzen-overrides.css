@@ -1,5 +1,7 @@
-.rz-textbox {
+.rz-textbox, .rz-form-field-content {
     height: 46px;
+    background-color: var(--light-background);
+    border-radius: 12px;
 }
 
 .rz-button-lg {

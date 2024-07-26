@@ -7,6 +7,10 @@
 @using Seljmov.Blazor.Identity.Shared
 @inject AuthHttpClientFactory AuthHttpClientFactory
 
+<style>
+
+</style>
+
 @if (_loading)
 {
     <div class="d-flex justify-content-center">
@@ -17,6 +21,19 @@
 }
 else
 {
+    <div class="search-panel">
+        <div class="search-input">
+            <RadzenFormField>
+                <Start>
+                    <span class="sd-icon search-icon"></span>
+                </Start>
+                <ChildContent>
+                    <RadzenTextBox Placeholder="Поиск" @oninput="@_onInputDebounced" />
+                </ChildContent>
+            </RadzenFormField>
+            
+        </div>
+    </div>
     <div class="users-panel">
         <div class="users-list">
             @foreach(var (role, users) in _users)
@@ -56,12 +73,25 @@ else
 @code {
     private bool _loading = true;
     private HttpClient _client = default!;
+    private Action<ChangeEventArgs> _onInputDebounced = default!;
     private Dictionary<string, List<UserDto>> _users = [];
+
+    private string? _filterValue = string.Empty;
+    private Dictionary<string, List<UserDto>> _allUsers = [];
 
     protected override void OnInitialized()
     {
         _client = AuthHttpClientFactory.CreateUsersClient();
         base.OnInitialized();
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        _onInputDebounced = Debouncer.DebounceEvent<ChangeEventArgs>(
+            action: (e => _filterValue = e.Value?.ToString()),
+            callback: FilterUsers
+        );
+        return base.OnInitializedAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -70,11 +100,28 @@ else
         {
             _loading = true;
             var users = await LoadUserData();
-            _users = users.GroupBy(user => user.Role).ToDictionary(group => group.Key, group => group.ToList());
+            _allUsers = users.GroupBy(user => user.Role).ToDictionary(group => group.Key, group => group.ToList());
+            _users = _allUsers;
             _loading = false;
             StateHasChanged();
         }
         await base.OnAfterRenderAsync(firstRender);
+    }
+    
+    private void FilterUsers()
+    {
+        if (string.IsNullOrWhiteSpace(_filterValue))
+        {
+            _users = _allUsers;
+            StateHasChanged();
+            return;
+        }
+        
+        _users = _allUsers.SelectMany(user => user.Value)
+            .Where(user => user.SearchString.Contains(_filterValue, StringComparison.InvariantCultureIgnoreCase))
+            .GroupBy(user => user.Role)
+            .ToDictionary(group => group.Key, group => group.ToList());
+        StateHasChanged();
     }
 
     private async Task<List<UserDto>> LoadUserData()
