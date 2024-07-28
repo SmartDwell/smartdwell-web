@@ -1,10 +1,9 @@
-@page "/users"
+@page "/users/{SelectedId?}"
 
 @attribute [Authorize(Policy = AuthPolicies.UsersPolicy)]
+
 @using Client.Auth
-@using Contracts.Roles
 @using Contracts.Users
-@using global::Shared
 @using Microsoft.AspNetCore.Authorization
 @using Seljmov.Blazor.Identity.Shared
 
@@ -23,15 +22,15 @@ else
     <div style="height: 100vh;">
         <div class="search-panel">
             <div class="search-input">
-                <RadzenFormField>
+                <RadzenFormField AllowFloatingLabel="false">
                     <Start>
                         <span class="sd-icon search-icon"></span>
                     </Start>
                     <ChildContent>
-                        <RadzenTextBox Placeholder="Поиск" @oninput="@_onInputDebounced" />
+                        <RadzenTextBox Placeholder="Введите имя, фамилию, роль, номер телефона или email..." 
+                                       @oninput="@_onInputDebounced" />
                     </ChildContent>
                 </RadzenFormField>
-
             </div>
         </div>
         <div class="users-panel">
@@ -90,6 +89,12 @@ else
     private string? _filterValue = string.Empty;
     private Dictionary<string, List<UserDto>> _allUsers = [];
 
+    /// <summary>
+    /// Идентификатор пользователя.
+    /// </summary>
+    [Parameter]
+    public string? SelectedId { get; set; }
+    
     protected override void OnInitialized()
     {
         _client = AuthHttpClientFactory.CreateAuthorizedBaseClient();
@@ -106,6 +111,17 @@ else
         {
             _loading = true;
             await InitUserList();
+            
+            if (!string.IsNullOrWhiteSpace(SelectedId))
+            {
+                var user = _allUsers.SelectMany(user => user.Value)
+                    .FirstOrDefault(user => user.Id.ToString() == SelectedId);
+                if (user is not null)
+                {
+                    SelectUser(user);
+                }
+            }
+            
             _loading = false;
             StateHasChanged();
         }
