@@ -15,19 +15,22 @@
                     <label class="user-textbox-title">
                         Фамилия <span class="required">*</span>
                     </label>
-                    <RadzenTextBox @bind-Value="@SelectedUser.Surname" Style="width: 100%;"/>
+                    <RadzenTextBox @bind-Value="@SelectedUser.Surname" Name="Surname" Style="width: 100%;"/>
+                    <RadzenDataAnnotationValidator Component="Surname" />
                 </div>
                 <div class="d-flex flex-column">
                     <label class="user-textbox-title">
                         Имя <span class="required">*</span>
                     </label>
-                    <RadzenTextBox @bind-Value="@SelectedUser.Name" Style="width: 100%;"/>
+                    <RadzenTextBox @bind-Value="@SelectedUser.Name" Name="Name" Style="width: 100%;"/>
+                    <RadzenDataAnnotationValidator Component="Name" />
                 </div>
                 <div class="d-flex flex-column">
                     <label class="user-textbox-title">
                         Отчество
                     </label>
-                    <RadzenTextBox @bind-Value="@SelectedUser.Patronymic" Style="width: 100%;"/>
+                    <RadzenTextBox @bind-Value="@SelectedUser.Patronymic" Name="Patronymic" Style="width: 100%;"/>
+                    <RadzenDataAnnotationValidator Component="Patronymic" />
                 </div>
             </div>
             <div class="d-flex flex-row gap-3">
@@ -35,25 +38,28 @@
                     <label class="user-textbox-title">
                         Номер телефона <span class="required">*</span>
                     </label>
-                    <RadzenTextBox @bind-Value="@SelectedUser.Phone" Style="width: 100%;"/>
+                    <RadzenTextBox @bind-Value="@SelectedUser.Phone" Name="Phone" Style="width: 100%;"/>
+                    <RadzenDataAnnotationValidator Component="Phone" />
                 </div>
                 <div class="d-flex flex-column w-100">
                     <label class="user-textbox-title">
                         Электронная почта <span class="required">*</span>
                     </label>
-                    <RadzenTextBox @bind-Value="@SelectedUser.Email" Style="width: 100%;"/>
+                    <RadzenTextBox @bind-Value="@SelectedUser.Email" Name="Email" Style="width: 100%;"/>
+                    <RadzenDataAnnotationValidator Component="Email" />
                 </div>
             </div>
             <div class="d-flex flex-column">
                 <label class="user-textbox-title">
                     Роль <span class="required">*</span>
                 </label>
-                <RadzenDropDown TValue="RoleBaseDto" @bind-Value="@SelectedUser.Role" Data="@_roles" Style="width: 100%;"
-                                TextProperty="Name" />
+                <RadzenDropDown TValue="RoleBaseDto" @bind-Value="@SelectedUser.Role" Data="@_roles" 
+                                Name="Role" Style="width: 100%;" TextProperty="Name" />
+                <RadzenDataAnnotationValidator Component="Role" />
             </div>
             <span class="required" style="font-size: 12px;">
-                                * - обязательные поля
-                            </span>
+                * - обязательные поля
+            </span>
         </div>
         <div class="d-flex flex-row align-items-center gap-3 mt-3">
             <RadzenButton Style="width: max-content;"
