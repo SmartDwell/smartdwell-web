@@ -28,28 +28,100 @@ public static class RouteConstants
     }
     
     /// <summary>
-    /// Данные аутентификации
+    /// Данные аутентификации.
     /// </summary>
     public static class AuthData
     {
         /// <summary>
-        /// Базовый маршрут
+        /// Базовый маршрут.
         /// </summary>
         public const string Route = "/api/auth";
         
         /// <summary>
-        /// Начало аутентификации
+        /// Начало аутентификации.
         /// </summary>
         public const string Start = "/start";
         
         /// <summary>
-        /// Завершение аутентификации
+        /// Завершение аутентификации.
         /// </summary>
         public const string Complete = "/complete";
         
         /// <summary>
-        /// Обновление токенов
+        /// Обновление токенов.
         /// </summary>
         public const string Refresh = "/refresh";
+    }
+    
+    /// <summary>
+    /// Данные ролей.
+    /// </summary>
+    public static class RolesData
+    {
+        /// <summary>
+        /// Базовый маршрут.
+        /// </summary>
+        public const string Route = "/api/roles";
+        
+        /// <summary>
+        /// Получение списка ролей.
+        /// </summary>
+        public const string Roles = "/";
+        
+        /// <summary>
+        /// Редактирование роли.
+        /// </summary>
+        public const string Edit = Roles;
+        
+        /// <summary>
+        /// Добавление роли.
+        /// </summary>
+        public const string Add = Roles;
+        
+        /// <summary>
+        /// Получение роли по идентификатору.
+        /// </summary>
+        public const string RoleById = "/{id:guid}";
+        
+        /// <summary>
+        /// Получение списка ролей.
+        /// </summary>
+        public const string GetRolesUrl = $"{Route}{Roles}";
+    }
+    
+    /// <summary>
+    /// Данные пользователя.
+    /// </summary>
+    public static class UserData
+    {
+        /// <summary>
+        /// Базовый маршрут
+        /// </summary>
+        public const string Route = "/api/users";
+
+        /// <summary>
+        /// Получение списка пользователей.
+        /// </summary>
+        public const string Users = "/";
+
+        /// <summary>
+        /// Редактирование пользователя.
+        /// </summary>
+        public const string Edit = Users;
+        
+        /// <summary>
+        /// Получение пользователя по идентификатору.
+        /// </summary>
+        public const string UserById = "/{id:guid}";
+        
+        /// <summary>
+        /// Получение списка пользователей.
+        /// </summary>
+        public const string GetUsersUrl = $"{Route}{Users}";
+        
+        /// <summary>
+        /// Редактирование пользователя.
+        /// </summary>
+        public const string EditUserUrl = $"{Route}{Edit}";
     }
 }

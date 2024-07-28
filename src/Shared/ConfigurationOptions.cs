@@ -6,7 +6,7 @@ namespace Shared;
 public class ConfigurationOptions
 {
     /// <summary>
-    /// Путь к серверу работы с пользователями.
+    /// Путь к серверу работы с заявками.
     /// </summary>
-    public string UsersServerUrl { get; set; } = string.Empty;
+    public string RequestsServiceUrl { get; set; } = string.Empty;
 }

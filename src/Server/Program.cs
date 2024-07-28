@@ -3,6 +3,7 @@ using Adeptik.Hosting.AspNet.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Seljmov.AspNet.Commons.Helpers;
 using Seljmov.AspNet.Commons.Options;
+using Seljmov.Blazor.Identity.Shared;
 using Server;
 using Server.ApiGroups;
 using Server.Options;
@@ -22,6 +23,8 @@ builder.Services.AddControllers()
     });
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 builder.Services.AddDbContext<DatabaseContext>(options => options.UseNpgsql(connectionString));
+
+MapsterConfig.Config();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -44,8 +47,8 @@ builder.Services.AddRazorPages();
 var app = builder.BuildWebApplication(
     buildOptions: new BuildOptions
     {
-        UseJwtAuthentication = false,
         UseCors = true,
+        AuthenticationPolicies = AuthPolicies.AllPolicies,
     });
 
 if (app.Environment.IsDevelopment())
@@ -61,6 +64,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.MapAuthGroup();
+app.MapUserGroup();
+app.MapRolesGroup();
 app.MapConfigurationGroup();
 
 app.MapRazorPages();

@@ -36,7 +36,7 @@ public static class WebAssemblyHostBuilderExtensions
         // Регистрация сервиса аутентификации
         builder.Services.AddScoped<AuthService>(sp =>
             new AuthService(
-                httpClient: sp.GetRequiredService<AuthHttpClientFactory>().CreateAuthenticatedClient(),
+                httpClient: sp.GetRequiredService<AuthHttpClientFactory>().CreateBaseClient(),
                 authStateProvider: sp.GetRequiredService<AuthStateProvider>(),
                 authFlow: sp.GetRequiredService<AuthFlow>()
             ));
@@ -71,11 +71,14 @@ public static class WebAssemblyHostBuilderExtensions
     private static void RegisterServerClients(this WebAssemblyHostBuilder builder, ConfigurationOptions? options)
     {
         builder.Services.AddScoped<AuthHttpClientHandler>();
+        builder.Services.AddHttpClient(AuthHttpClientFactory.BaseHttpClientName, client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
+        builder.Services
+            .AddHttpClient(AuthHttpClientFactory.AuthorizedBaseHttpClientName, client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+            .AddHttpMessageHandler<AuthHttpClientHandler>();
         
-        builder.Services.AddHttpClient(AuthHttpClientFactory.AuthHttpClientName, client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
         if (options is null)
         {
-            foreach (var clientName in AuthHttpClientFactory.HttpClientNames.Except([AuthHttpClientFactory.AuthHttpClientName]))
+            foreach (var clientName in AuthHttpClientFactory.HttpClientNames.Except(AuthHttpClientFactory.ExcludedHttpClientNames))
             {
                 builder.Services
                     .AddHttpClient(clientName, client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
@@ -84,9 +87,7 @@ public static class WebAssemblyHostBuilderExtensions
         }
         else
         {
-            builder.Services
-                .AddHttpClient(AuthHttpClientFactory.UsersHttpClientName, client => client.BaseAddress = new Uri(options.UsersServerUrl))
-                .AddHttpMessageHandler<AuthHttpClientHandler>();
+            // Регистрация http-клиентов
         }
         
         builder.Services.AddScoped<AuthHttpClientFactory>();

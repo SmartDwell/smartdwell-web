@@ -2,11 +2,15 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
+    
+    height: calc(95% - var(--header-height));
 }
 
 .users-list {
     display: grid;
     gap: 2.5rem;
+    
+    height: max-content;
 }
 
 .role-panel {
@@ -20,9 +24,25 @@
 }
 
 .user-card {
+    width: max-content;
     display: flex;
     flex-direction: column;
-    padding: 0 1rem;
+    padding: .25rem 1rem;
+    cursor: pointer;
+}
+
+.user-card.selected {
+    background-color: var(--primary-color);
+    border-radius: var(--base-radius);
+    box-shadow: var(--base-shadow);
+}
+
+.user-card.selected .user-name {
+    color: var(--light-background-secondary);
+}
+
+.user-card.selected .user-info {
+    color: var(--light-background);
 }
 
 .user-card:not(:last-child) {
@@ -76,12 +96,39 @@
     mask: url('data:image/svg+xml,<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="%237270f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
 }
 
-@media (max-width: 760px) {
+.user-update-panel {
+    width: 100%;
+    height: 100%;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    
+    border-radius: var(--base-radius);
+}
+
+.user-change-panel {
+    padding: 20px;
+    background-color: var(--light-background-secondary);
+}
+
+.user-update-panel .rz-textbox, .user-update-panel .rz-form-field-content {
+    border-radius: var(--base-radius);
+}
+
+.user-textbox-title {
+    font-size: 0.75rem;
+    margin-bottom: 0;
+    margin-left: 8px;
+    color: var(--light-text-color65);
+}
+
+@media (max-width: 1280px) {
     .users-panel {
         display: flex;
     }
     
-    .user-create-panel {
+    .user-change-panel {
         display: none;   
     }
 

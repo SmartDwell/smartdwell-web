@@ -1,3 +1,5 @@
+using Contracts.Roles;
+
 namespace Contracts.Users;
 
 /// <summary>
@@ -38,7 +40,7 @@ public class UserDto
 	/// <summary>
 	/// Роль.
 	/// </summary>
-	public string Role { get; set; } = string.Empty;
+	public RoleBaseDto Role { get; set; } = new();
 	
 	/// <summary>
 	/// Полное имя.
@@ -48,7 +50,7 @@ public class UserDto
 	/// <summary>
 	/// Строка для поиска.
 	/// </summary>
-	public string SearchString => $"{FullName} {Phone} {Email} {Role}".ToLower();
+	public string SearchString => $"{FullName} {Phone} {Email} {Role.Name}".ToLower();
 	
 	/// <summary>
 	/// Маскированный телефон вида +7 (999) 999-99-99.
@@ -56,4 +58,23 @@ public class UserDto
 	public string MaskedPhone => Phone.Length == 11
 		? $"+7 ({Phone[1..4]}) {Phone[4..7]}-{Phone[7..9]}-{Phone[9..11]}"
 		: Phone;
+	
+	/// <summary>
+	/// Клонировать.
+	/// </summary>
+	/// <returns>Клон.</returns>
+	public UserDto Clone() => new()
+	{
+		Id = Id,
+		Phone = Phone,
+		Email = Email,
+		Name = Name,
+		Surname = Surname,
+		Patronymic = Patronymic,
+		Role = new RoleBaseDto
+		{
+			Id = Role.Id,
+			Name = Role.Name
+		}
+	};
 }

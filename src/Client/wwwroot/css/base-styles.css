@@ -14,6 +14,12 @@
     --primary-color15: rgba(114, 112, 244, 0.15);
     --primary-color-dark: rgb(105, 103, 227);
 
+    --secondary-color-lighter: #E2E2E225;
+    --secondary-color-light: #E2E2E250;
+    --secondary-color: var(--light-background);
+    --secondary-color-dark: #DBDBDB;
+    --secondary-color-darker: #D4D4D4;
+
     --bs-primary: var(--primary-color);
     --bs-primary-rgb: 114, 112, 244;
     
@@ -22,6 +28,12 @@
     --rz-primary-lighter: var(--primary-color-lighter);
     --rz-primary-dark: var(--primary-color-dark);
     --rz-primary-darker: var(--primary-color-darken);
+
+    --rz-secondary: var(--secondary-color);
+    --rz-secondary-light: var(--secondary-color-light);
+    --rz-secondary-lighter: var(--secondary-color-lighter);
+    --rz-secondary-dark: var(--secondary-color-dark);
+    --rz-secondary-darker: var(--secondary-color-darker);
     
     --light-text-color: rgba(28, 28, 30, 1);
     --light-text-color83: rgba(28, 28, 30, 0.83);
@@ -30,6 +42,7 @@
     --light-text-color10: rgba(28, 28, 30, 0.1);
     --light-text-color4: rgba(28, 28, 30, 0.04);
     
+    --max-width: 1280px;
     --sidebar-width: 300px;
     --header-height: 70px;
     --header-height-mobile: 60px;
@@ -76,6 +89,10 @@ body {
     width: 1.5rem;
     height: 1.5rem;
     border-width: 0.15em;
+}
+
+.required {
+    color: var(--bs-danger);
 }
 
 ::-webkit-scrollbar {
