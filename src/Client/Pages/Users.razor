@@ -7,6 +7,7 @@
 @using global::Shared
 @using Microsoft.AspNetCore.Authorization
 @using Seljmov.Blazor.Identity.Shared
+
 @inject AuthHttpClientFactory AuthHttpClientFactory
 
 @if (_loading)
@@ -37,108 +38,43 @@ else
             <div class="users-list">
                 @foreach(var (role, users) in _users.OrderBy(roleGroup => roleGroup.Key))
                 {
-                <div class="role-panel">
-                    <h2 class="text-headline-small">
-                        @role
-                    </h2>
-                    <div class="role-users">
-                        @foreach(var user in users)
-                        {
-                            <div class="user-card @GetSelectedUserClass(user)" 
-                                 @onclick="_ => SelectUser(user)" @onclick:stopPropagation="true" @onclick:preventDefault="true">
-                            <div class="user-name">
-                                @user.FullName
-                            </div>
-                            <div class="user-info">
-                                    <span>
-                                        @user.MaskedPhone
-                                    </span>
-                                &nbsp;•&nbsp;
-                                <span>
-                                        @user.Email
-                                    </span>
-                            </div>
+                    <div class="role-panel">
+                        <h2 class="text-headline-small">
+                            @role
+                        </h2>
+                        <div class="role-users">
+                            @foreach(var user in users)
+                            {
+                                <div class="user-card @GetSelectedUserClass(user)" 
+                                     @onclick="_ => SelectUser(user)" @onclick:stopPropagation="true" @onclick:preventDefault="true">
+                                    <div class="user-name">
+                                        @user.FullName
+                                    </div>
+                                    <div class="user-info">
+                                        <span>
+                                            @user.MaskedPhone
+                                        </span>
+                                        &nbsp;•&nbsp;
+                                        <span>
+                                            @user.Email
+                                        </span>
+                                    </div>
+                                </div>
+                            }
                         </div>
-                        }
                     </div>
-                </div>
                 }
             </div>
-            <div class="user-update-panel user-change-panel justify-content-between">
-                @if (_selectedUser != null)
-                {
-                    <RadzenTemplateForm TItem="UserDto?" Data="@_selectedUser"
-                                        InvalidSubmit="args => Console.WriteLine(args)" 
-                                        Submit="@(_ => SaveUserChanges())" 
-                                        class="d-flex flex-column justify-content-between h-100">
-                        <div class="d-flex flex-column gap-3">
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                                <div class="d-flex flex-column">
-                                    <label class="user-textbox-title">
-                                        Фамилия <span class="required">*</span>
-                                    </label>
-                                    <RadzenTextBox @bind-Value="@_selectedUser.Surname" Style="width: 100%;"/>
-                                </div>
-                                <div class="d-flex flex-column">
-                                    <label class="user-textbox-title">
-                                        Имя <span class="required">*</span>
-                                    </label>
-                                    <RadzenTextBox @bind-Value="@_selectedUser.Name" Style="width: 100%;"/>
-                                </div>
-                                <div class="d-flex flex-column">
-                                    <label class="user-textbox-title">
-                                        Отчество
-                                    </label>
-                                    <RadzenTextBox @bind-Value="@_selectedUser.Patronymic" Style="width: 100%;"/>
-                                </div>
-                            </div>
-                            <div class="d-flex flex-row gap-3">
-                                <div class="d-flex flex-column w-100">
-                                    <label class="user-textbox-title">
-                                        Номер телефона <span class="required">*</span>
-                                    </label>
-                                    <RadzenTextBox @bind-Value="@_selectedUser.Phone" Style="width: 100%;"/>
-                                </div>
-                                <div class="d-flex flex-column w-100">
-                                    <label class="user-textbox-title">
-                                        Электронная почта <span class="required">*</span>
-                                    </label>
-                                    <RadzenTextBox @bind-Value="@_selectedUser.Email" Style="width: 100%;"/>
-                                </div>
-                            </div>
-                            <div class="d-flex flex-column">
-                                <label class="user-textbox-title">
-                                    Роль <span class="required">*</span>
-                                </label>
-                                <RadzenDropDown TValue="RoleBaseDto" @bind-Value="@_selectedUser.Role" Data="@_roles" Style="width: 100%;"
-                                                TextProperty="Name" />
-                            </div>
-                            <span class="required" style="font-size: 12px;">
-                                * - обязательные поля
-                            </span>
-                        </div>
-                        <div class="d-flex flex-row align-items-center gap-3 mt-3">
-                            <RadzenButton Style="width: max-content;"
-                                          Disabled="@_saveButtonDisabled"
-                                          ButtonType="ButtonType.Submit" Size="ButtonSize.Large">
-                                <ChildContent>
-                                    @if (_saveButtonDisabled)
-                                    {
-                                        <div class="spinner-border text-light" role="status"></div>
-                                    }
-                                    else
-                                    {
-                                        <span>Сохранить</span>
-                                    }
-                                </ChildContent>
-                            </RadzenButton>
-                            <RadzenButton Text="Закрыть" Style="width: max-content;"
-                                          ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Large" 
-                                          Click="@ClearSelectedUser"/>
-                        </div>
-                    </RadzenTemplateForm>
-                }
-            </div>
+            @if (_selectedUser is null)
+            {
+                <div class="user-update-panel user-change-panel"></div>
+            }
+            else
+            {
+                <UserEdit SelectedUser="@_selectedUser"
+                          OnSave="async () => await InitUserList()"
+                          OnCancel="@ClearSelectedUser"/>
+            }
         </div>
     </div>
 }
@@ -149,9 +85,7 @@ else
     
     private Action<ChangeEventArgs> _onInputDebounced = default!;
     
-    private List<RoleBaseDto> _roles = [];
     private Dictionary<string, List<UserDto>> _users = [];
-    private bool _saveButtonDisabled;
 
     private string? _filterValue = string.Empty;
     private Dictionary<string, List<UserDto>> _allUsers = [];
@@ -159,16 +93,11 @@ else
     protected override void OnInitialized()
     {
         _client = AuthHttpClientFactory.CreateAuthorizedBaseClient();
-        base.OnInitialized();
-    }
-
-    protected override Task OnInitializedAsync()
-    {
         _onInputDebounced = Debouncer.DebounceEvent<ChangeEventArgs>(
             action: (e => _filterValue = e.Value?.ToString()),
             callback: FilterUsers
         );
-        return base.OnInitializedAsync();
+        base.OnInitialized();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -176,14 +105,7 @@ else
         if (firstRender)
         {
             _loading = true;
-            _roles = (await LoadRoles()).Select(role => new RoleBaseDto
-            {
-                Id = role.Id,
-                Name = role.Name
-            }).ToList();
-            var users = await LoadUserData();
-            _allUsers = users.GroupBy(user => user.Role.Name).ToDictionary(group => group.Key, group => group.ToList());
-            _users = _allUsers;
+            await InitUserList();
             _loading = false;
             StateHasChanged();
         }
@@ -212,42 +134,16 @@ else
         return await response.Content.ReadFromJsonAsync<List<UserDto>>() ?? [];
     }
     
-    private async Task<List<RoleDto>> LoadRoles()
+    private async Task InitUserList()
     {
-        var response = await _client.GetAsync(RouteConstants.RolesData.GetRolesUrl);
-        return await response.Content.ReadFromJsonAsync<List<RoleDto>>() ?? [];
-    }
-    
-    private async Task SaveUserChanges()
-    {
-        _saveButtonDisabled = true;
-        var response = await _client.PutAsJsonAsync(RouteConstants.UserData.EditUserUrl, _selectedUser);
-        if (!response.IsSuccessStatusCode)
-        {
-            Console.WriteLine(response.StatusCode);
-        }
-        else
-        {
-            var users = await LoadUserData();
-            _allUsers = users.GroupBy(user => user.Role.Name).ToDictionary(group => group.Key, group => group.ToList());
-            FilterUsers();
-        }
-        _saveButtonDisabled = false;
-        StateHasChanged();
+        var users = await LoadUserData();
+        _allUsers = users.GroupBy(user => user.Role.Name).ToDictionary(group => group.Key, group => group.ToList());
+        FilterUsers();
     }
 
     #region Select User
 
     private UserDto? _selectedUser;
-    
-    private void OnKeyDown(KeyboardEventArgs e)
-    {
-        Console.WriteLine(e.Key);
-        if (e.Key == "Escape")
-        {
-            ClearSelectedUser();
-        }
-    }
     
     private void ClearSelectedUser()
     {

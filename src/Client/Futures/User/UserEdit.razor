@@ -1,0 +1,144 @@
+@using Client.Auth
+@using Contracts.Roles
+@using Contracts.Users
+
+@inject AuthHttpClientFactory AuthHttpClientFactory
+
+<div class="user-update-panel user-change-panel justify-content-between">
+    <RadzenTemplateForm TItem="UserDto?" Data="@SelectedUser"
+                        InvalidSubmit="args => Console.WriteLine(args)"
+                        Submit="@(_ => SaveUserChanges())"
+                        class="d-flex flex-column justify-content-between h-100">
+        <div class="d-flex flex-column gap-3">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="d-flex flex-column">
+                    <label class="user-textbox-title">
+                        Фамилия <span class="required">*</span>
+                    </label>
+                    <RadzenTextBox @bind-Value="@SelectedUser.Surname" Style="width: 100%;"/>
+                </div>
+                <div class="d-flex flex-column">
+                    <label class="user-textbox-title">
+                        Имя <span class="required">*</span>
+                    </label>
+                    <RadzenTextBox @bind-Value="@SelectedUser.Name" Style="width: 100%;"/>
+                </div>
+                <div class="d-flex flex-column">
+                    <label class="user-textbox-title">
+                        Отчество
+                    </label>
+                    <RadzenTextBox @bind-Value="@SelectedUser.Patronymic" Style="width: 100%;"/>
+                </div>
+            </div>
+            <div class="d-flex flex-row gap-3">
+                <div class="d-flex flex-column w-100">
+                    <label class="user-textbox-title">
+                        Номер телефона <span class="required">*</span>
+                    </label>
+                    <RadzenTextBox @bind-Value="@SelectedUser.Phone" Style="width: 100%;"/>
+                </div>
+                <div class="d-flex flex-column w-100">
+                    <label class="user-textbox-title">
+                        Электронная почта <span class="required">*</span>
+                    </label>
+                    <RadzenTextBox @bind-Value="@SelectedUser.Email" Style="width: 100%;"/>
+                </div>
+            </div>
+            <div class="d-flex flex-column">
+                <label class="user-textbox-title">
+                    Роль <span class="required">*</span>
+                </label>
+                <RadzenDropDown TValue="RoleBaseDto" @bind-Value="@SelectedUser.Role" Data="@_roles" Style="width: 100%;"
+                                TextProperty="Name" />
+            </div>
+            <span class="required" style="font-size: 12px;">
+                                * - обязательные поля
+                            </span>
+        </div>
+        <div class="d-flex flex-row align-items-center gap-3 mt-3">
+            <RadzenButton Style="width: max-content;"
+                          Disabled="@_saveButtonDisabled"
+                          ButtonType="ButtonType.Submit" Size="ButtonSize.Large">
+                <ChildContent>
+                    @if (_saveButtonDisabled)
+                    {
+                    <div class="spinner-border text-light" role="status"></div>
+                    }
+                    else
+                    {
+                    <span>Сохранить</span>
+                    }
+                </ChildContent>
+            </RadzenButton>
+            <RadzenButton Text="Закрыть" Style="width: max-content;"
+                          ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Large"
+                          Click="@OnCancel"/>
+        </div>
+    </RadzenTemplateForm>
+</div>
+
+@code {
+    private HttpClient _client = default!;
+    private List<RoleBaseDto> _roles = [];
+    private bool _saveButtonDisabled;
+    
+    /// <summary>
+    /// Выбранный пользователь.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public UserDto SelectedUser { get; set; } = default!;
+
+    /// <summary>
+    /// Событие сохранения изменений.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public Action OnSave { get; set; } = default!;
+    
+    /// <summary>
+    /// Событие отмены изменений.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public Action OnCancel { get; set; } = default!;
+    
+    protected override void OnInitialized()
+    {
+        _client = AuthHttpClientFactory.CreateAuthorizedBaseClient();
+        base.OnInitialized();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _roles = (await LoadRoles()).Select(role => new RoleBaseDto
+            {
+                Id = role.Id,
+                Name = role.Name
+            }).ToList();
+            StateHasChanged();
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+    private async Task<List<RoleDto>> LoadRoles()
+    {
+        var response = await _client.GetAsync(RouteConstants.RolesData.GetRolesUrl);
+        return await response.Content.ReadFromJsonAsync<List<RoleDto>>() ?? [];
+    }
+    
+    private async Task SaveUserChanges()
+    {
+        _saveButtonDisabled = true;
+        var response = await _client.PutAsJsonAsync(RouteConstants.UserData.EditUserUrl, SelectedUser);
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine(response.StatusCode);
+        }
+        else
+        {
+            OnSave();
+        }
+        _saveButtonDisabled = false;
+        StateHasChanged();
+    }
+}
