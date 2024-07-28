@@ -1,3 +1,23 @@
+:root {
+    --bs-primary: var(--primary-color);
+    --bs-primary-rgb: 114, 112, 244;
+
+    --rz-primary: var(--primary-color);
+    --rz-primary-light: var(--primary-color-light);
+    --rz-primary-lighter: var(--primary-color-lighter);
+    --rz-primary-dark: var(--primary-color-dark);
+    --rz-primary-darker: var(--primary-color-darken);
+
+    --rz-secondary: var(--secondary-color);
+    --rz-secondary-light: var(--secondary-color-light);
+    --rz-secondary-lighter: var(--secondary-color-lighter);
+    --rz-secondary-dark: var(--secondary-color-dark);
+    --rz-secondary-darker: var(--secondary-color-darker);
+
+    --rz-success: var(--bs-success);
+    --rz-danger: var(--bs-danger);
+}
+
 .rz-messages-error {
     margin-left: 8px;
     color: var(--bs-danger);

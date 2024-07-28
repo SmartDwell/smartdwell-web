@@ -2,6 +2,7 @@
 @using Contracts.Roles
 @using Contracts.Users
 
+@inject NotificationService NotificationService
 @inject AuthHttpClientFactory AuthHttpClientFactory
 
 <div class="user-update-panel user-change-panel justify-content-between">
@@ -68,11 +69,11 @@
                 <ChildContent>
                     @if (_saveButtonDisabled)
                     {
-                    <div class="spinner-border text-light" role="status"></div>
+                        <div class="spinner-border text-light" role="status"></div>
                     }
                     else
                     {
-                    <span>Сохранить</span>
+                        <span>Сохранить</span>
                     }
                 </ChildContent>
             </RadzenButton>
@@ -138,13 +139,30 @@
         var response = await _client.PutAsJsonAsync(RouteConstants.UserData.EditUserUrl, SelectedUser);
         if (!response.IsSuccessStatusCode)
         {
-            Console.WriteLine(response.StatusCode);
+            var message = await response.Content.ReadAsStringAsync();
+            ShowErrorNotification(message);
         }
         else
         {
+            ShowSuccessNotification();
             OnSave();
         }
         _saveButtonDisabled = false;
         StateHasChanged();
     }
+
+    #region Notifications
+
+    
+    private void ShowSuccessNotification()
+    {
+        NotificationService.Notify(NotificationSeverity.Success, "Успешно", "Изменения сохранены.");
+    }
+    
+    private void ShowErrorNotification(string message)
+    {
+        NotificationService.Notify(NotificationSeverity.Error, "Ошибка", message);
+    }
+
+    #endregion
 }
