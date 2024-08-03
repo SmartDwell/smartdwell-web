@@ -21,4 +21,9 @@
       <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <AdditionalFiles Include="Widgets\User\UserAdd.razor" />
+      <AdditionalFiles Include="Widgets\User\UserPut.razor" />
+    </ItemGroup>
+
 </Project>

@@ -60,9 +60,12 @@
 }
 else
 {
-    <UserPut SelectedUser="@_selectedUser"
-             OnSave="@OnSave"
-             OnCancel="@ClearSelectedRole" />
+    <div class="user-update-panel user-change-panel justify-content-between">
+        <UserForm SelectedUser="@_selectedUser"
+                  OnSave="@OnSave"
+                  OnDelete="@OnDelete"
+                  OnCancel="@ClearSelectedRole"/>
+    </div>
 }
 
 @code {
@@ -79,7 +82,11 @@ else
     [Parameter, EditorRequired] 
     public Action<UserDto> OnSave { get; set; } = default!;
     
-    
+    /// <summary>
+    /// Событие удаления пользователя.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public Action? OnDelete { get; set; }
     
     protected override void OnInitialized()
     {

@@ -73,7 +73,7 @@ else
                 <UserPut SelectedUser="@_selectedUser"
                          OnSave="async user => await AfterSaveUserChanges(user)"
                          OnDelete="async () => await InitUserList()"
-                          OnCancel="@ClearSelectedUser" />
+                         OnCancel="@ClearSelectedUser" />
             }
         </div>
     </div>

@@ -1,0 +1,204 @@
+@using Client.Auth
+@using Contracts.Roles
+@using Contracts.Users
+
+@inject NotificationService NotificationService
+@inject AuthHttpClientFactory AuthHttpClientFactory
+
+<RadzenTemplateForm TItem="UserPutDto?" Data="@SelectedUser"
+                    InvalidSubmit="args => Console.WriteLine(args)"
+                    Submit="@(_ => SaveUserChanges())"
+                    class="d-flex flex-column justify-content-between h-100">
+    <div class="d-flex flex-column gap-3">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+            <div class="d-flex flex-column">
+                <label class="user-textbox-title">
+                    Фамилия <span class="required">*</span>
+                </label>
+                <RadzenTextBox @bind-Value="@SelectedUser.Surname" Name="Surname" Style="width: 100%;"/>
+                <RadzenDataAnnotationValidator Component="Surname" />
+            </div>
+            <div class="d-flex flex-column">
+                <label class="user-textbox-title">
+                    Имя <span class="required">*</span>
+                </label>
+                <RadzenTextBox @bind-Value="@SelectedUser.Name" Name="Name" Style="width: 100%;"/>
+                <RadzenDataAnnotationValidator Component="Name" />
+            </div>
+            <div class="d-flex flex-column">
+                <label class="user-textbox-title">
+                    Отчество
+                </label>
+                <RadzenTextBox @bind-Value="@SelectedUser.Patronymic" Name="Patronymic" Style="width: 100%;"/>
+                <RadzenDataAnnotationValidator Component="Patronymic" />
+            </div>
+        </div>
+        <div class="d-flex flex-row gap-3">
+            <div class="d-flex flex-column w-100">
+                <label class="user-textbox-title">
+                    Номер телефона <span class="required">*</span>
+                </label>
+                <RadzenTextBox @bind-Value="@SelectedUser.Phone" Name="Phone" Style="width: 100%;"/>
+                <RadzenDataAnnotationValidator Component="Phone" />
+            </div>
+            <div class="d-flex flex-column w-100">
+                <label class="user-textbox-title">
+                    Электронная почта <span class="required">*</span>
+                </label>
+                <RadzenTextBox @bind-Value="@SelectedUser.Email" Name="Email" Style="width: 100%;"/>
+                <RadzenDataAnnotationValidator Component="Email" />
+            </div>
+        </div>
+        <div class="d-flex flex-column">
+            <label class="user-textbox-title">
+                Роль <span class="required">*</span>
+            </label>
+            <RadzenDropDown TValue="RoleBaseDto" @bind-Value="@SelectedUser.Role" Data="@_roles"
+                            Name="Role" Style="width: 100%;" TextProperty="Name" />
+            <RadzenDataAnnotationValidator Component="Role" />
+        </div>
+        <span class="required" style="font-size: 12px;">
+                * - обязательные поля
+            </span>
+    </div>
+    <div class="d-flex flex-row align-items-center justify-content-between mt-3">
+        <div class="d-flex flex-row align-items-center gap-3">
+            <RadzenButton Style="width: max-content;"
+                          Disabled="@_saveButtonDisabled"
+                          ButtonType="ButtonType.Submit" Size="ButtonSize.Large">
+                <ChildContent>
+                    @if (_saveButtonDisabled)
+                    {
+                    <div class="spinner-border text-light" role="status"></div>
+                    }
+                    else
+                    {
+                    <span>Сохранить</span>
+                    }
+                </ChildContent>
+            </RadzenButton>
+            <RadzenButton Text="Закрыть" Style="width: max-content;"
+                          ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Large"
+                          Click="@(_ => OnCancel?.Invoke())"/>
+        </div>
+        @if (SelectedUser.Id.HasValue)
+        {
+            <RadzenButton Text="Удалить" Style="width: max-content;"
+                          ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large"
+                          Click="@DeleteUser"/>
+        }
+    </div>
+</RadzenTemplateForm>
+
+@code {
+    private List<RoleBaseDto> _roles = [];
+    private HttpClient _client = default!;
+    private bool _saveButtonDisabled;
+    
+    /// <summary>
+    /// Выбранный пользователь.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public UserPutDto SelectedUser { get; set; } = default!;
+    
+    /// <summary>
+    /// Событие сохранения изменений.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public Action<UserDto>? OnSave { get; set; }
+    
+    /// <summary>
+    /// Событие отмены изменений.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public Action? OnCancel { get; set; }
+    
+    /// <summary>
+    /// Событие удаления пользователя.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public Action? OnDelete { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        _client = AuthHttpClientFactory.CreateAuthorizedBaseClient();
+        base.OnInitialized();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _roles = (await LoadRoles()).Select(role => new RoleBaseDto
+            {
+                Id = role.Id,
+                Name = role.Name
+            }).ToList();
+            StateHasChanged();
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+    private async Task<List<RoleDto>> LoadRoles()
+    {
+        var response = await _client.GetAsync(RouteConstants.RolesData.GetRolesUrl);
+        return await response.Content.ReadFromJsonAsync<List<RoleDto>>() ?? [];
+    }
+    
+    private async void SaveUserChanges()
+    {
+        _saveButtonDisabled = true;
+        var response = await _client.PutAsJsonAsync(RouteConstants.UserData.PutUserUrl, SelectedUser);
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = await response.Content.ReadAsStringAsync();
+            ShowErrorNotification(message);
+        }
+        else
+        {
+            var userDto = await response.Content.ReadFromJsonAsync<UserDto>();
+            if (userDto is not null)
+            {
+                OnSave?.Invoke(userDto);
+            }
+            ShowSuccessNotification();
+        }
+        _saveButtonDisabled = false;
+        StateHasChanged();
+    }
+    
+    private async void DeleteUser()
+    {
+        if (!SelectedUser.Id.HasValue) return;
+        
+        var response = await _client.DeleteAsync(RouteConstants.UserData.DeleteUserUrl(SelectedUser.Id.Value));
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = await response.Content.ReadAsStringAsync();
+            ShowErrorNotification(message);
+        }
+        else
+        {
+            OnDelete?.Invoke();
+            OnCancel?.Invoke();
+            ShowSuccessNotification("Пользователь удален.");
+        }
+    }
+    
+    #region Notifications
+
+    
+    private void ShowSuccessNotification(string? message = null)
+    {
+        message ??= "Изменения сохранены.";
+        NotificationService.Notify(NotificationSeverity.Success, "Успешно", message);
+    }
+    
+    private void ShowErrorNotification(string? message = null)
+    {
+        message ??= "Произошла ошибка при сохранении изменений.";
+        NotificationService.Notify(NotificationSeverity.Error, "Ошибка", message);
+    }
+
+    #endregion
+}
