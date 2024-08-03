@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using Seljmov.Blazor.Identity.Shared;
 using Shared;
 
 namespace Server.ApiGroups;
@@ -35,19 +34,12 @@ public static class RolesGroup
             .WithOpenApi();
     }
     
-    private static async Task<Ok<List<RoleDto>>> GetRoles(DatabaseContext context)
+    private static Task<Ok<RoleDto[]>> GetRoles(DatabaseContext context)
     {
-        var roles = await context.Roles
+        var roles = context.Roles
             .Include(role => role.Users)
-            .Select(role => new RoleDto
-            {
-                Id = role.Id,
-                Name = role.Name,
-                Policies = role.Policies,
-                UsersCount = role.Users.Count,
-            })
-            .ToListAsync();
-        return TypedResults.Ok(roles);
+            .Adapt<RoleDto[]>();
+        return Task.FromResult(TypedResults.Ok(roles));
     }
     
     private static async Task<IResult> AddRole(DatabaseContext context, [FromBody] RoleAddDto roleDto)
@@ -56,11 +48,7 @@ public static class RolesGroup
         if (existingRole is not null)
             return TypedResults.Text("Роль с таким именем уже существует.", statusCode: StatusCodes.Status400BadRequest);
         
-        var role = new Role
-        {
-            Name = roleDto.Name,
-            Policies = roleDto.Policies,
-        };
+        var role = roleDto.Adapt<Role>();
         await context.Roles.AddAsync(role);
         await context.SaveChangesAsync();
         return TypedResults.Ok(role);

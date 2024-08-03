@@ -90,4 +90,23 @@ public class UserDto
 			Name = Role.Name
 		}
 	};
+	
+	/// <summary>
+	/// Преобразовать в модель редактирования.
+	/// </summary>
+	/// <returns>Модель редактирования.</returns>
+	public UserPutDto ToPutDto() => new()
+	{
+		Id = Id,
+		Phone = Phone,
+		Email = Email,
+		Name = Name,
+		Surname = Surname,
+		Patronymic = Patronymic,
+		Role = new RoleBaseDto
+		{
+			Id = Role.Id,
+			Name = Role.Name
+		}
+	};
 }

@@ -3,6 +3,7 @@ using Mapster;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Models;
 using Seljmov.Blazor.Identity.Shared;
 using Shared;
 
@@ -27,10 +28,15 @@ public static class UserGroup
             .WithName("GetUsers")
             .WithSummary("Получение списка пользователей.")
             .WithOpenApi();
-        group.MapPut(RouteConstants.UserData.Edit, EditUser)
+        group.MapPut(RouteConstants.UserData.Put, PutUser)
             .Produces<IResult>()
-            .WithName("EditUser")
-            .WithSummary("Редактирование пользователя.")
+            .WithName("PutUser")
+            .WithSummary("Добавление/редактирование пользователя.")
+            .WithOpenApi();
+        group.MapDelete(RouteConstants.UserData.Delete, DeleteUser)
+            .Produces<IResult>()
+            .WithName("DeleteUser")
+            .WithSummary("Удаление пользователя.")
             .WithOpenApi();
         group.MapGet(RouteConstants.UserData.UserById, GetUserById)
             .Produces<UserDto>()
@@ -47,33 +53,70 @@ public static class UserGroup
         return TypedResults.Ok(users);
     }
     
-    private static async Task<IResult> EditUser(DatabaseContext context, [FromBody] UserDto userDto)
+    private static async Task<IResult> PutUser(DatabaseContext context, [FromBody] UserPutDto userDto)
     {
-        var user = await context.Users
-            .Include(user => user.Role)
-            .FirstOrDefaultAsync(user => user.Id == userDto.Id);
+        if (!context.Roles.Any(role => role.Id == userDto.Role.Id))
+            return TypedResults.Text("Роль не найдена.", statusCode: StatusCodes.Status404NotFound);
         
+        return userDto.Id.HasValue ? await EditUser(userDto) : await AddUser(userDto);
+
+        async Task<IResult> AddUser(UserPutDto userPutDto)
+        {
+            var existingUser = await context.Users.FirstOrDefaultAsync(user => user.Email == userPutDto.Email || user.Phone == userPutDto.Phone);
+            if (existingUser is not null)
+                return TypedResults.Text("Пользователь с таким номером телефона или электронной почтой уже существует.", statusCode: StatusCodes.Status400BadRequest);
+            
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Name = userPutDto.Name,
+                Surname = userPutDto.Surname,
+                Patronymic = userPutDto.Patronymic,
+                Email = userPutDto.Email,
+                Phone = userPutDto.Phone,
+                RoleId = userPutDto.Role.Id
+            };
+            await context.Users.AddAsync(user);
+            await context.SaveChangesAsync();
+         
+            return await GetUserById(context, user.Id);
+        }
+
+        async Task<IResult> EditUser(UserPutDto userPutDto)
+        {
+            var user = await context.Users
+                .Include(user => user.Role)
+                .FirstOrDefaultAsync(user => user.Id == userPutDto.Id);
+        
+            if (user is null)
+                return TypedResults.Text("Пользователь не найден.", statusCode: StatusCodes.Status404NotFound);
+        
+            user.Name = userPutDto.Name;
+            user.Surname = userPutDto.Surname;
+            user.Patronymic = userPutDto.Patronymic;
+            user.Email = userPutDto.Email;
+            user.Phone = userPutDto.Phone;
+            user.Role.Id = userPutDto.Role.Id;
+        
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
+            
+            return await GetUserById(context, user.Id);
+        }
+    }
+
+    private static async Task<IResult> DeleteUser(DatabaseContext context, [FromRoute] Guid id)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(user => user.Id == id);
         if (user is null)
             return TypedResults.Text("Пользователь не найден.", statusCode: StatusCodes.Status404NotFound);
         
-        var role = await context.Roles.FirstOrDefaultAsync(role => role.Id == userDto.Role.Id);
-        
-        if (role is null)
-            return TypedResults.Text("Роль не найдена.", statusCode: StatusCodes.Status404NotFound);
-        
-        user.Name = userDto.Name;
-        user.Surname = userDto.Surname;
-        user.Patronymic = userDto.Patronymic;
-        user.Email = userDto.Email;
-        user.Phone = userDto.Phone;
-        user.Role = role;
-        
-        context.Users.Update(user);
+        context.Users.Remove(user);
         await context.SaveChangesAsync();
-        
-        return TypedResults.Ok();
-    }
 
+        return TypedResults.NoContent();
+    }
+    
     private static async Task<IResult> GetUserById(DatabaseContext context, [FromRoute] Guid id)
     {
         var user = await context.Users

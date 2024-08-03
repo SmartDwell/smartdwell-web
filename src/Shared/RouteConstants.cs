@@ -102,18 +102,23 @@ public static class RouteConstants
         /// <summary>
         /// Получение списка пользователей.
         /// </summary>
-        public const string Users = "/";
-
+        public const string Users = "";
+        
         /// <summary>
         /// Редактирование пользователя.
         /// </summary>
-        public const string Edit = Users;
-        
+        public const string Put = Users;
+
+        /// <summary>
+        /// Удаление пользователя.
+        /// </summary>
+        public const string Delete = $"{Users}/{{id:guid}}";
+
         /// <summary>
         /// Получение пользователя по идентификатору.
         /// </summary>
-        public const string UserById = "/{id:guid}";
-        
+        public const string UserById = $"{Users}/{{id:guid}}";
+
         /// <summary>
         /// Получение списка пользователей.
         /// </summary>
@@ -122,6 +127,13 @@ public static class RouteConstants
         /// <summary>
         /// Редактирование пользователя.
         /// </summary>
-        public const string EditUserUrl = $"{Route}{Edit}";
+        public const string PutUserUrl = $"{Route}{Put}";
+        
+        /// <summary>
+        /// Удаление пользователя.
+        /// </summary>
+        /// <param name="id">Идентификатор пользователя.</param>
+        /// <returns>Маршрут удаления пользователя.</returns>
+        public static string DeleteUserUrl(Guid id) => $"{Route}{Delete}".Replace("{id:guid}", id.ToString());
     }
 }

@@ -6,7 +6,7 @@
 @inject AuthHttpClientFactory AuthHttpClientFactory
 
 <div class="user-update-panel user-change-panel justify-content-between">
-    <RadzenTemplateForm TItem="UserDto?" Data="@SelectedUser"
+    <RadzenTemplateForm TItem="UserPutDto?" Data="@SelectedUser"
                         InvalidSubmit="args => Console.WriteLine(args)"
                         Submit="@(_ => SaveUserChanges())"
                         class="d-flex flex-column justify-content-between h-100">
@@ -62,24 +62,32 @@
                 * - обязательные поля
             </span>
         </div>
-        <div class="d-flex flex-row align-items-center gap-3 mt-3">
-            <RadzenButton Style="width: max-content;"
-                          Disabled="@_saveButtonDisabled"
-                          ButtonType="ButtonType.Submit" Size="ButtonSize.Large">
-                <ChildContent>
-                    @if (_saveButtonDisabled)
-                    {
-                        <div class="spinner-border text-light" role="status"></div>
-                    }
-                    else
-                    {
-                        <span>Сохранить</span>
-                    }
-                </ChildContent>
-            </RadzenButton>
-            <RadzenButton Text="Закрыть" Style="width: max-content;"
-                          ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Large"
-                          Click="@OnCancel"/>
+        <div class="d-flex flex-row align-items-center justify-content-between mt-3">
+            <div class="d-flex flex-row align-items-center gap-3">
+                <RadzenButton Style="width: max-content;"
+                              Disabled="@_saveButtonDisabled"
+                              ButtonType="ButtonType.Submit" Size="ButtonSize.Large">
+                    <ChildContent>
+                        @if (_saveButtonDisabled)
+                        {
+                            <div class="spinner-border text-light" role="status"></div>
+                        }
+                        else
+                        {
+                            <span>Сохранить</span>
+                        }
+                    </ChildContent>
+                </RadzenButton>
+                <RadzenButton Text="Закрыть" Style="width: max-content;"
+                              ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Large"
+                              Click="@(_ => OnCancel?.Invoke())"/>
+            </div>
+            @if (SelectedUser.Id.HasValue)
+            {
+                <RadzenButton Text="Удалить" Style="width: max-content;"
+                              ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large"
+                              Click="@DeleteUser"/>
+            }
         </div>
     </RadzenTemplateForm>
 </div>
@@ -93,19 +101,25 @@
     /// Выбранный пользователь.
     /// </summary>
     [Parameter, EditorRequired] 
-    public UserDto SelectedUser { get; set; } = default!;
+    public UserPutDto SelectedUser { get; set; } = default!;
 
     /// <summary>
     /// Событие сохранения изменений.
     /// </summary>
     [Parameter, EditorRequired] 
-    public Action OnSave { get; set; } = default!;
+    public Action<UserDto>? OnSave { get; set; }
     
     /// <summary>
     /// Событие отмены изменений.
     /// </summary>
     [Parameter, EditorRequired] 
-    public Action OnCancel { get; set; } = default!;
+    public Action? OnCancel { get; set; }
+    
+    /// <summary>
+    /// Событие удаления пользователя.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public Action? OnDelete { get; set; }
     
     protected override void OnInitialized()
     {
@@ -136,7 +150,7 @@
     private async Task SaveUserChanges()
     {
         _saveButtonDisabled = true;
-        var response = await _client.PutAsJsonAsync(RouteConstants.UserData.EditUserUrl, SelectedUser);
+        var response = await _client.PutAsJsonAsync(RouteConstants.UserData.PutUserUrl, SelectedUser);
         if (!response.IsSuccessStatusCode)
         {
             var message = await response.Content.ReadAsStringAsync();
@@ -144,23 +158,47 @@
         }
         else
         {
+            var userDto = await response.Content.ReadFromJsonAsync<UserDto>();
+            if (userDto is not null)
+            {
+                OnSave?.Invoke(userDto);
+            }
             ShowSuccessNotification();
-            OnSave();
         }
         _saveButtonDisabled = false;
         StateHasChanged();
+    }
+    
+    private async Task DeleteUser()
+    {
+        if (!SelectedUser.Id.HasValue) return;
+        
+        var response = await _client.DeleteAsync(RouteConstants.UserData.DeleteUserUrl(SelectedUser.Id.Value));
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = await response.Content.ReadAsStringAsync();
+            ShowErrorNotification(message);
+        }
+        else
+        {
+            OnDelete?.Invoke();
+            OnCancel?.Invoke();
+            ShowSuccessNotification("Пользователь удален.");
+        }
     }
 
     #region Notifications
 
     
-    private void ShowSuccessNotification()
+    private void ShowSuccessNotification(string? message = null)
     {
-        NotificationService.Notify(NotificationSeverity.Success, "Успешно", "Изменения сохранены.");
+        message ??= "Изменения сохранены.";
+        NotificationService.Notify(NotificationSeverity.Success, "Успешно", message);
     }
     
-    private void ShowErrorNotification(string message)
+    private void ShowErrorNotification(string? message = null)
     {
+        message ??= "Произошла ошибка при сохранении изменений.";
         NotificationService.Notify(NotificationSeverity.Error, "Ошибка", message);
     }
 

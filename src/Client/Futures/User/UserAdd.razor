@@ -1,0 +1,129 @@
+@using Client.Auth
+@using Contracts.Roles
+@using Contracts.Users
+
+@inject NotificationService NotificationService
+@inject AuthHttpClientFactory AuthHttpClientFactory
+
+<style>
+    .roles-grid {
+        max-height: 80%;
+        overflow-y: auto;
+        
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .role-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        padding: .5rem 1rem;
+        font-size: 12px;
+        border-radius: var(--base-radius);
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .role-card:hover {
+        cursor: pointer;
+        background-color: var(--primary-color-dark);
+    }
+</style>
+
+@if (_selectedRole is null)
+{
+    <style>
+        .user-update-panel {
+            gap: 0;
+        }
+    </style>
+    
+    <div class="user-update-panel user-change-panel align-items-center justify-content-center">
+        <span class="text-headline-small">
+            Создать нового пользователя
+        </span>
+        <span class="text-body mb-3" style="color: var(--light-text-color65) !important;">
+            Выберите роль
+        </span>
+        <div class="roles-grid">
+            @foreach (var role in _roles)
+            {
+                <div class="role-card" @onclick="_ => SelectRole(role)">
+                    @role.Name
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <UserPut SelectedUser="@_selectedUser"
+             OnSave="@OnSave"
+             OnCancel="@ClearSelectedRole" />
+}
+
+@code {
+    private HttpClient _client = default!;
+    private List<RoleBaseDto> _roles = [];
+    
+    private RoleBaseDto? _selectedRole;
+    private UserPutDto _selectedUser = new();
+    private bool _saveButtonDisabled;
+
+    /// <summary>
+    /// Событие сохранения изменений.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public Action<UserDto> OnSave { get; set; } = default!;
+    
+    
+    
+    protected override void OnInitialized()
+    {
+        _client = AuthHttpClientFactory.CreateAuthorizedBaseClient();
+        base.OnInitialized();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _roles = (await LoadRoles()).Select(role => new RoleBaseDto
+            {
+                Id = role.Id,
+                Name = role.Name
+            }).ToList();
+            StateHasChanged();
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+    private async Task<List<RoleDto>> LoadRoles()
+    {
+        var response = await _client.GetAsync(RouteConstants.RolesData.GetRolesUrl);
+        return await response.Content.ReadFromJsonAsync<List<RoleDto>>() ?? [];
+    }
+
+    private void ClearSelectedRole()
+    {
+        if (_selectedRole is null) return;
+        
+        _selectedRole = null;
+        _selectedUser = new UserPutDto();
+        
+        StateHasChanged();
+    }
+    
+    private void SelectRole(RoleBaseDto role)
+    {
+        if (_selectedRole is not null) return;
+        
+        _selectedRole = role;
+        _selectedUser.Role = role;
+        
+        StateHasChanged();
+    }
+}

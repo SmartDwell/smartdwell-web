@@ -66,13 +66,14 @@ else
             </div>
             @if (_selectedUser is null)
             {
-                <div class="user-update-panel user-change-panel"></div>
+                <UserAdd OnSave="async user => await AfterSaveUserChanges(user)" />
             }
             else
             {
-                <UserEdit SelectedUser="@_selectedUser"
-                          OnSave="async () => await InitUserList()"
-                          OnCancel="@ClearSelectedUser"/>
+                <UserPut SelectedUser="@_selectedUser"
+                         OnSave="async user => await AfterSaveUserChanges(user)"
+                         OnDelete="async () => await InitUserList()"
+                          OnCancel="@ClearSelectedUser" />
             }
         </div>
     </div>
@@ -150,6 +151,21 @@ else
         return await response.Content.ReadFromJsonAsync<List<UserDto>>() ?? [];
     }
     
+    private async Task AfterSaveUserChanges(UserDto user)
+    {
+        await InitUserList();
+        
+        if (_selectedUser is not null)
+        {
+            _selectedUser = null;
+            StateHasChanged();
+            return;
+        }
+        
+        _selectedUser = user.ToPutDto();
+        StateHasChanged();
+    }
+    
     private async Task InitUserList()
     {
         var users = await LoadUserData();
@@ -159,7 +175,7 @@ else
 
     #region Select User
 
-    private UserDto? _selectedUser;
+    private UserPutDto? _selectedUser;
     
     private void ClearSelectedUser()
     {
@@ -176,8 +192,8 @@ else
             ClearSelectedUser();
             return;
         }
-        
-        _selectedUser = user.Clone();
+
+        _selectedUser = user.ToPutDto();
         StateHasChanged();
     }
     
