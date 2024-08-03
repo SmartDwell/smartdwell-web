@@ -7,6 +7,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Seljmov.Blazor.Identity.Shared
 
+@inject AuthFlow AuthFlow
 @inject AuthHttpClientFactory AuthHttpClientFactory
 
 @if (_loading)
@@ -113,7 +114,7 @@ else
             _loading = true;
             await InitUserList();
             
-            if (!string.IsNullOrWhiteSpace(SelectedId))
+            if (!string.IsNullOrWhiteSpace(SelectedId) && !string.IsNullOrEmpty(SelectedId))
             {
                 var user = _allUsers.SelectMany(user => user.Value)
                     .FirstOrDefault(user => user.Id.ToString() == SelectedId);
@@ -126,6 +127,12 @@ else
             _loading = false;
             StateHasChanged();
         }
+        
+        if (!string.IsNullOrWhiteSpace(SelectedId) && !string.IsNullOrEmpty(SelectedId) && !Guid.TryParse(SelectedId, out _))
+        {
+            AuthFlow.NotFound();
+        }
+        
         await base.OnAfterRenderAsync(firstRender);
     }
     
