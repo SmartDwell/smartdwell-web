@@ -73,25 +73,6 @@ public class UserDto
 		: Phone;
 	
 	/// <summary>
-	/// Клонировать.
-	/// </summary>
-	/// <returns>Клон.</returns>
-	public UserDto Clone() => new()
-	{
-		Id = Id,
-		Phone = Phone,
-		Email = Email,
-		Name = Name,
-		Surname = Surname,
-		Patronymic = Patronymic,
-		Role = new RoleBaseDto
-		{
-			Id = Role.Id,
-			Name = Role.Name
-		}
-	};
-	
-	/// <summary>
 	/// Преобразовать в модель редактирования.
 	/// </summary>
 	/// <returns>Модель редактирования.</returns>

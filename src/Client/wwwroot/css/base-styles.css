@@ -47,12 +47,6 @@
     box-sizing: border-box;
 }
 
-/**:focus {*/
-/*    outline: 2px solid var(--primary-color);*/
-/*    outline-offset: 4px;*/
-/*    border-radius: 8px;*/
-/*}*/
-
 body {
     font-family: 'Ubuntu', sans-serif;
     background: var(--light-background);

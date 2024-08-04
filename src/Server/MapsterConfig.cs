@@ -44,7 +44,6 @@ internal static class MapsterConfig
             .Map(dest => dest.Role, src => src.Role.Adapt<RoleBaseDto>());
         
         TypeAdapterConfig<UserPutDto, User>.NewConfig()
-            //.Map(dest => dest.Id, src => Guid.NewGuid())
             .Map(dest => dest.Name, src => src.Name)
             .Map(dest => dest.Surname, src => src.Surname)
             .Map(dest => dest.Patronymic, src => src.Patronymic)
