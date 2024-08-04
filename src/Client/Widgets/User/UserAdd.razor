@@ -6,31 +6,7 @@
 @inject AuthHttpClientFactory AuthHttpClientFactory
 
 <style>
-    .roles-grid {
-        max-height: 80%;
-        overflow-y: auto;
-        
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-    }
     
-    .role-card {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        
-        padding: .5rem 1rem;
-        font-size: 12px;
-        border-radius: var(--base-radius);
-        background-color: var(--primary-color);
-        color: white;
-    }
-    
-    .role-card:hover {
-        cursor: pointer;
-        background-color: var(--primary-color-dark);
-    }
 </style>
 
 @if (_selectedRole is null)

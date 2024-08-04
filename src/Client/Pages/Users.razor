@@ -9,6 +9,15 @@
 
 @inject AuthFlow AuthFlow
 @inject AuthHttpClientFactory AuthHttpClientFactory
+@inject DialogService DialogService
+
+<style>
+    .user-edit-icon {
+        width: 20px;
+        height: 20px;
+        background-color: var(--light-background);
+    }
+</style>
 
 @if (_loading)
 {
@@ -33,6 +42,15 @@ else
                     </ChildContent>
                 </RadzenFormField>
             </div>
+            <div class="search-panel-add-btn">
+                <RadzenButton Click="@ShowAddUserDialog"
+                              ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.ExtraSmall"
+                              Style="width: 40px; height: 40px; border-radius: var(--base-radius);">
+                    <ChildContent>
+                        <span class="sd-icon sd-add-icon" style="background-color: var(--light-background);"></span>
+                    </ChildContent>
+                </RadzenButton>
+            </div>
         </div>
         <div class="users-panel">
             <div class="users-list">
@@ -45,37 +63,49 @@ else
                         <div class="role-users">
                             @foreach(var user in users)
                             {
-                                <div class="user-card @GetSelectedUserClass(user)" 
+                                <div class="user-card d-flex flex-row @GetSelectedUserClass(user)" 
                                      @onclick="_ => SelectUser(user)" @onclick:stopPropagation="true" @onclick:preventDefault="true">
-                                    <div class="user-name">
-                                        @user.FullName
+                                    <div class="d-flex flex-column">
+                                        <div class="user-name">
+                                            @user.FullName
+                                        </div>
+                                        <div class="user-info">
+                                            <span>
+                                                @user.MaskedPhone
+                                            </span>
+                                            &nbsp;•&nbsp;
+                                            <span>
+                                                @user.Email
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div class="user-info">
-                                        <span>
-                                            @user.MaskedPhone
-                                        </span>
-                                        &nbsp;•&nbsp;
-                                        <span>
-                                            @user.Email
-                                        </span>
-                                    </div>
+                                    @if (_selectedUser?.Id == user.Id)
+                                    {
+                                        <div class="mobile-toggle-panel d-flex align-items-center ms-3">
+                                            <span class="sd-icon sd-edit-icon user-edit-icon"
+                                                  @onclick="@ShowEditUserDialog"></span>
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
                     </div>
                 }
             </div>
-            @if (_selectedUser is null)
-            {
-                <UserAdd OnSave="async user => await AfterSaveUserChanges(user)" />
-            }
-            else
-            {
-                <UserPut SelectedUser="@_selectedUser"
-                         OnSave="async user => await AfterSaveUserChanges(user)"
-                         OnDelete="async () => await InitUserList()"
-                         OnCancel="@ClearSelectedUser" />
-            }
+            <div class="user-edit-panel">
+                @if (_selectedUser is null)
+                {
+                    <UserAdd OnSave="async user => await AfterSaveUserChanges(user)"
+                             OnDelete="async () => await InitUserList()" />
+                }
+                else
+                {
+                    <UserPut SelectedUser="@_selectedUser"
+                             OnSave="async user => await AfterSaveUserChanges(user)"
+                             OnDelete="async () => await InitUserList()"
+                             OnCancel="@ClearSelectedUser" />
+                }
+            </div>
         </div>
     </div>
 }
@@ -207,6 +237,26 @@ else
     private string GetSelectedUserClass(UserDto user)
     {
         return _selectedUser?.Id == user.Id ? "selected" : string.Empty;
+    }
+
+    #endregion
+
+    #region Dialogs
+
+    private async void ShowAddUserDialog()
+    {
+        await DialogService.OpenAsync(string.Empty, ds => 
+            @<UserAdd OnSave="async user => { await AfterSaveUserChanges(user); ds.Close(); }"
+                      OnDelete="async () => { await InitUserList(); ds.Close(); }" />);
+    }
+    
+    private async void ShowEditUserDialog()
+    {
+        await DialogService.OpenAsync(string.Empty, ds => 
+            @<UserPut SelectedUser="@_selectedUser"
+                      OnSave="async user => { await AfterSaveUserChanges(user); ds.Close(); }"
+                      OnDelete="async () => { await InitUserList(); ds.Close(); }"
+                      OnCancel="() => { ClearSelectedUser(); ds.Close(); }" />);
     }
 
     #endregion

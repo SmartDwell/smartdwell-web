@@ -77,3 +77,26 @@
     padding: 0.75rem 1.25rem;
     min-height: 3rem;
 }
+
+@media (max-width: 768px) {
+    .rz-dialog:not(.rz-dialog-confirm):not(.rz-dialog-alert) {
+        height: 100% !important;
+    }
+
+    .rz-dialog-content {
+        height: 100%;
+        padding: 0 !important;
+    }
+}
+
+@media (max-width: 1280px) {
+    .rz-dialog {
+        width: 100% !important;
+        height: 100% !important;
+    }
+    
+    .rz-dialog-content {
+        height: 100%;
+        padding: 0 !important;
+    }
+}

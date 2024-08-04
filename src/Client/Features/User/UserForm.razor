@@ -10,7 +10,7 @@
                     Submit="@(_ => SaveUserChanges())"
                     class="d-flex flex-column justify-content-between h-100">
     <div class="d-flex flex-column gap-3">
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+        <div class="user-name-part">
             <div class="d-flex flex-column">
                 <label class="user-textbox-title">
                     Фамилия <span class="required">*</span>
@@ -33,7 +33,7 @@
                 <RadzenDataAnnotationValidator Component="Patronymic" />
             </div>
         </div>
-        <div class="d-flex flex-row gap-3">
+        <div class="user-personal-info-part">
             <div class="d-flex flex-column w-100">
                 <label class="user-textbox-title">
                     Номер телефона <span class="required">*</span>
@@ -61,7 +61,7 @@
                 * - обязательные поля
             </span>
     </div>
-    <div class="d-flex flex-row align-items-center justify-content-between mt-3">
+    <div class="user-form-footer">
         <div class="d-flex flex-row align-items-center gap-3">
             <RadzenButton Style="width: max-content;"
                           Disabled="@_saveButtonDisabled"
@@ -77,7 +77,7 @@
                     }
                 </ChildContent>
             </RadzenButton>
-            <RadzenButton Text="Закрыть" Style="width: max-content;"
+            <RadzenButton Text="Закрыть" Style="width: max-content;" class="desktop-toggle-panel"
                           ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Large"
                           Click="@(_ => OnCancel?.Invoke())"/>
         </div>

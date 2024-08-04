@@ -1,6 +1,7 @@
 @import "base-styles.css";
 @import "blazor-default.css";
 @import "radzen-overrides.css";
+@import "sd-icons.css";
 
 @import "components/users.css";
 

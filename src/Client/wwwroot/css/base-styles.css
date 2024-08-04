@@ -97,3 +97,21 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background-color: #2D2D2D60;
 }
+
+.mobile-toggle-panel {
+    display: none !important;
+}
+
+.desktop-toggle-panel {
+    display: flex !important;
+}
+
+@media (max-width: 1280px) {
+    .mobile-toggle-panel {
+        display: flex !important;
+    }
+    
+    .desktop-toggle-panel {
+        display: none !important;
+    }
+}
