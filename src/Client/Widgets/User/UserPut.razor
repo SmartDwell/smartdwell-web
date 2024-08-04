@@ -1,0 +1,37 @@
+@using Contracts.Users
+
+<div class="user-update-panel user-change-panel justify-content-between">
+    <UserForm SelectedUser="@SelectedUser"
+              OnSave="@OnSave"
+              OnDelete="@OnDelete"
+              OnCancel="@OnCancel"/>
+</div>
+
+@code {
+    private HttpClient _client = default!;
+    private bool _saveButtonDisabled;
+    
+    /// <summary>
+    /// Выбранный пользователь.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public UserPutDto SelectedUser { get; set; } = default!;
+
+    /// <summary>
+    /// Событие сохранения изменений.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public Action<UserDto>? OnSave { get; set; }
+    
+    /// <summary>
+    /// Событие отмены изменений.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public Action? OnCancel { get; set; }
+    
+    /// <summary>
+    /// Событие удаления пользователя.
+    /// </summary>
+    [Parameter, EditorRequired] 
+    public Action? OnDelete { get; set; }
+}

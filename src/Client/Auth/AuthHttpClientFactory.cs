@@ -17,35 +17,38 @@ public class AuthHttpClientFactory
     }
     
     /// <summary>
-    /// Имя http-клиента с авторизацией.
+    /// Имя базового http-клиента.
     /// </summary>
-    public static string AuthHttpClientName => "AuthenticatedHttpClient";
+    public static string BaseHttpClientName => "BaseHttpClient";
     
     /// <summary>
-    /// Имя http-клиента для работы с пользователями.
+    /// Имя базового http-клиента с авторизацией.
     /// </summary>
-    public static string UsersHttpClientName => "UsersHttpClient";
+    public static string AuthorizedBaseHttpClientName => "AuthorizedBaseHttpClient";
 
     /// <summary>
     /// Имена http-клиентов.
     /// </summary>
-    public static IEnumerable<string> HttpClientNames => new[] { AuthHttpClientName, UsersHttpClientName };
+    public static List<string> HttpClientNames => [BaseHttpClientName, AuthorizedBaseHttpClientName];
     
     /// <summary>
-    /// Создать http-клиент с авторизацией.
+    /// Исключенные имена http-клиентов.
     /// </summary>
-    /// <returns>Http-клиент с авторизацией.</returns>
+    public static List<string> ExcludedHttpClientNames => [BaseHttpClientName, AuthorizedBaseHttpClientName];
+    
+    /// <summary>
+    /// Создать базовый http-клиент.
+    /// </summary>
     public HttpClient CreateClient(string name) => _httpClientFactory.CreateClient(name);
     
     /// <summary>
     /// Создать http-клиент с авторизацией.
     /// </summary>
     /// <returns>Http-клиент с авторизацией.</returns>
-    public HttpClient CreateAuthenticatedClient() => CreateClient(AuthHttpClientName);
+    public HttpClient CreateBaseClient() => CreateClient(BaseHttpClientName);
     
     /// <summary>
-    /// Создать http-клиент для работы с пользователями.
+    /// Создать базовый http-клиент с авторизацией.
     /// </summary>
-    /// <returns>Http-клиент для работы с пользователями.</returns>
-    public HttpClient CreateUsersClient() => CreateClient(UsersHttpClientName);
+    public HttpClient CreateAuthorizedBaseClient() => CreateClient(AuthorizedBaseHttpClientName);
 }

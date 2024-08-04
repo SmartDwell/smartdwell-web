@@ -1,72 +1,265 @@
-@page "/users"
+@page "/users/{SelectedId?}"
 
 @attribute [Authorize(Policy = AuthPolicies.UsersPolicy)]
+
 @using Client.Auth
 @using Contracts.Users
 @using Microsoft.AspNetCore.Authorization
 @using Seljmov.Blazor.Identity.Shared
+
+@inject AuthFlow AuthFlow
 @inject AuthHttpClientFactory AuthHttpClientFactory
+@inject DialogService DialogService
+
+<style>
+    .user-edit-icon {
+        width: 20px;
+        height: 20px;
+        background-color: var(--light-background);
+    }
+</style>
 
 @if (_loading)
 {
-    <p><em>Empty...</em></p>
-    <button @onclick="@LoadUserData">Load</button>
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
 }
 else
 {
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Идентификатор</th>
-            <th>Телефон</th>
-            <th>Электронная почта</th>
-            <th>Имя</th>
-            <th>Фамилия</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var user in _users)
-        {
-            <tr>
-                <td>@user.Id</td>
-                <td>@user.Phone</td>
-                <td>@user.Email</td>
-                <td>@user.Name</td>
-                <td>@user.Surname</td>
-            </tr>
-        }
-        </tbody>
-    </table>
+    <div style="height: 100vh;">
+        <div class="search-panel">
+            <div class="search-input">
+                <RadzenFormField AllowFloatingLabel="false">
+                    <Start>
+                        <span class="sd-icon search-icon"></span>
+                    </Start>
+                    <ChildContent>
+                        <RadzenTextBox Placeholder="Введите имя, фамилию, роль, номер телефона или email..." 
+                                       @oninput="@_onInputDebounced" />
+                    </ChildContent>
+                </RadzenFormField>
+            </div>
+            <div class="search-panel-add-btn">
+                <RadzenButton Click="@ShowAddUserDialog"
+                              ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.ExtraSmall"
+                              Style="width: 40px; height: 40px; border-radius: var(--base-radius);">
+                    <ChildContent>
+                        <span class="sd-icon sd-add-icon" style="background-color: var(--light-background);"></span>
+                    </ChildContent>
+                </RadzenButton>
+            </div>
+        </div>
+        <div class="users-panel">
+            <div class="users-list">
+                @foreach(var (role, users) in _users.OrderBy(roleGroup => roleGroup.Key))
+                {
+                    <div class="role-panel">
+                        <h2 class="text-headline-small">
+                            @role
+                        </h2>
+                        <div class="role-users">
+                            @foreach(var user in users)
+                            {
+                                <div class="user-card d-flex flex-row @GetSelectedUserClass(user)" 
+                                     @onclick="_ => SelectUser(user)" @onclick:stopPropagation="true" @onclick:preventDefault="true">
+                                    <div class="d-flex flex-column">
+                                        <div class="user-name">
+                                            @user.FullName
+                                        </div>
+                                        <div class="user-info">
+                                            <span>
+                                                @user.MaskedPhone
+                                            </span>
+                                            &nbsp;•&nbsp;
+                                            <span>
+                                                @user.Email
+                                            </span>
+                                        </div>
+                                    </div>
+                                    @if (_selectedUser?.Id == user.Id)
+                                    {
+                                        <div class="mobile-toggle-panel d-flex align-items-center ms-3">
+                                            <span class="sd-icon sd-edit-icon user-edit-icon"
+                                                  @onclick="() => ShowEditUserDialog(_selectedUser)"></span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="user-edit-panel">
+                @if (_selectedUser is null)
+                {
+                    <UserAdd OnSave="async user => await AfterSaveUserChanges(user)"
+                             OnDelete="async () => await InitUserList()" />
+                }
+                else
+                {
+                    <UserPut SelectedUser="@_selectedUser"
+                             OnSave="async user => await AfterSaveUserChanges(user)"
+                             OnDelete="async () => await InitUserList()"
+                             OnCancel="@ClearSelectedUser" />
+                }
+            </div>
+        </div>
+    </div>
 }
 
 @code {
     private bool _loading = true;
-    private HttpClient _client;
-    private IList<UserDto> _users = new List<UserDto>();
+    private HttpClient _client = default!;
+    
+    private Action<ChangeEventArgs> _onInputDebounced = default!;
+    
+    private Dictionary<string, List<UserDto>> _users = [];
 
+    private string? _filterValue = string.Empty;
+    private Dictionary<string, List<UserDto>> _allUsers = [];
+
+    /// <summary>
+    /// Идентификатор пользователя.
+    /// </summary>
+    [Parameter]
+    public string? SelectedId { get; set; }
+    
     protected override void OnInitialized()
     {
-        _client = AuthHttpClientFactory.CreateUsersClient();
+        _client = AuthHttpClientFactory.CreateAuthorizedBaseClient();
+        _onInputDebounced = Debouncer.DebounceEvent<ChangeEventArgs>(
+            action: (e => _filterValue = e.Value?.ToString()),
+            callback: FilterUsers
+        );
         base.OnInitialized();
     }
-    
-    private async Task LoadUserData()
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _loading = true;
-        try
+        if (firstRender)
         {
-            var url = $"api/users";
-            var response = await _client.GetAsync(url);
-            if (response is not null)
+            _loading = true;
+            await InitUserList();
+            
+            if (!string.IsNullOrWhiteSpace(SelectedId) && !string.IsNullOrEmpty(SelectedId))
             {
-                _users = await response.Content.ReadFromJsonAsync<IList<UserDto>>();
+                var user = _allUsers.SelectMany(user => user.Value)
+                    .FirstOrDefault(user => user.Id.ToString() == SelectedId);
+                if (user is not null)
+                {
+                    SelectUser(user);
+                }
             }
+            
+            _loading = false;
+            StateHasChanged();
         }
-        catch (Exception e)
+        
+        if (!string.IsNullOrWhiteSpace(SelectedId) && !string.IsNullOrEmpty(SelectedId) && !Guid.TryParse(SelectedId, out _))
         {
-            Console.WriteLine(e);
+            AuthFlow.NotFound();
         }
-        _loading = false;
+        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+    private void FilterUsers()
+    {
+        if (string.IsNullOrWhiteSpace(_filterValue))
+        {
+            _users = _allUsers;
+            StateHasChanged();
+            return;
+        }
+        
+        _users = _allUsers.SelectMany(user => user.Value)
+            .Where(user => user.SearchString.Contains(_filterValue, StringComparison.InvariantCultureIgnoreCase))
+            .GroupBy(user => user.Role.Name)
+            .ToDictionary(group => group.Key, group => group.ToList());
         StateHasChanged();
     }
+
+    private async Task<List<UserDto>> LoadUserData()
+    {
+        var response = await _client.GetAsync(RouteConstants.UserData.GetUsersUrl);
+        return await response.Content.ReadFromJsonAsync<List<UserDto>>() ?? [];
+    }
+    
+    private async Task AfterSaveUserChanges(UserDto user)
+    {
+        await InitUserList();
+        
+        if (_selectedUser is not null)
+        {
+            _selectedUser = null;
+            StateHasChanged();
+            return;
+        }
+        
+        _selectedUser = user.ToPutDto();
+        StateHasChanged();
+    }
+    
+    private async Task InitUserList()
+    {
+        var users = await LoadUserData();
+        _allUsers = users.GroupBy(user => user.Role.Name).ToDictionary(group => group.Key, group => group.ToList());
+        FilterUsers();
+    }
+
+    #region Select User
+
+    private UserPutDto? _selectedUser;
+    
+    private void ClearSelectedUser()
+    {
+        if (_selectedUser == null) return;
+        
+        _selectedUser = null;
+        StateHasChanged();
+    }
+    
+    private void SelectUser(UserDto user)
+    {
+        if (_selectedUser?.Id == user.Id)
+        {
+            ClearSelectedUser();
+            return;
+        }
+
+        _selectedUser = user.ToPutDto();
+        StateHasChanged();
+    }
+    
+    private string GetSelectedUserClass(UserDto user)
+    {
+        return _selectedUser?.Id == user.Id ? "selected" : string.Empty;
+    }
+
+    #endregion
+
+    #region Dialogs
+
+    private async void ShowAddUserDialog()
+    {
+        await DialogService.OpenAsync(string.Empty, ds => 
+            @<UserAdd OnSave="async user => { await AfterSaveUserChanges(user); ds.Close(); }"
+                      OnDelete="async () => { await InitUserList(); ds.Close(); }" />);
+    }
+    
+    private async void ShowEditUserDialog(UserPutDto? userPutDto)
+    {
+        if (userPutDto is null) return;
+        
+        await DialogService.OpenAsync(string.Empty, ds => 
+            @<UserPut SelectedUser="@userPutDto"
+                      OnSave="async user => { await AfterSaveUserChanges(user); ds.Close(); }"
+                      OnDelete="async () => { await InitUserList(); ds.Close(); }"
+                      OnCancel="() => { ClearSelectedUser(); ds.Close(); }" />);
+    }
+
+    #endregion
 }

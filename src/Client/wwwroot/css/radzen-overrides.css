@@ -1,9 +1,102 @@
-.rz-textbox {
+:root {
+    --bs-primary: var(--primary-color);
+    --bs-primary-rgb: 114, 112, 244;
+
+    --rz-primary: var(--primary-color);
+    --rz-primary-light: var(--primary-color-light);
+    --rz-primary-lighter: var(--primary-color-lighter);
+    --rz-primary-dark: var(--primary-color-dark);
+    --rz-primary-darker: var(--primary-color-darken);
+
+    --rz-secondary: var(--secondary-color);
+    --rz-secondary-light: var(--secondary-color-light);
+    --rz-secondary-lighter: var(--secondary-color-lighter);
+    --rz-secondary-dark: var(--secondary-color-dark);
+    --rz-secondary-darker: var(--secondary-color-darker);
+
+    --rz-success: var(--bs-success);
+    --rz-danger: var(--bs-danger);
+}
+
+.rz-messages-error {
+    margin-left: 8px;
+    color: var(--bs-danger);
+}
+
+.rz-textbox, .rz-form-field-content, .rz-multiselect, .rz-dropdown {
     height: 46px;
+    background-color: var(--light-background);
+    border-radius: var(--base-radius);
+}
+
+.rz-multiselect, .rz-dropdown {
+    justify-content: center;
+}
+
+.rz-dropdown-panel {
+    margin-top: 8px;
+    border-radius: var(--base-radius);
+}
+
+.rz-state-highlight.rz-menuitem, 
+.rz-state-highlight.rz-autocomplete-list-item, 
+.rz-state-highlight.rz-multiselect-item, 
+.rz-autocomplete-items li.rz-state-highlight, 
+.rz-dropdown-items li.rz-state-highlight, 
+.rz-multiselect-items li.rz-state-highlight, 
+.rz-dropdown-item.rz-state-highlight {
+    background-color: var(--primary-color15);
+    color: var(--primary-color) !important;
+}
+
+.rz-state-highlight.rz-menuitem:hover, 
+.rz-state-highlight.rz-autocomplete-list-item:hover, 
+.rz-state-highlight.rz-multiselect-item:hover, 
+.rz-autocomplete-items li.rz-state-highlight:hover, 
+.rz-dropdown-items li.rz-state-highlight:hover, 
+.rz-multiselect-items li.rz-state-highlight:hover, 
+.rz-dropdown-item.rz-state-highlight:hover, 
+.rz-menuitem:hover, 
+.rz-autocomplete-list-item:hover, 
+.rz-multiselect-item:hover, 
+.rz-autocomplete-items li:hover, 
+.rz-dropdown-items li:hover, 
+.rz-multiselect-items li:hover, 
+.rz-dropdown-item:hover {
+    background-color: var(--primary-color25);
+    color: var(--primary-color) !important;
+}
+
+.rz-button.rz-secondary {
+    background-color: var(--light-text-color10) !important;
+    color: var(--light-text-color) !important;
 }
 
 .rz-button-lg {
     height: 48px;
     padding: 0.75rem 1.25rem;
     min-height: 3rem;
+}
+
+@media (max-width: 768px) {
+    .rz-dialog:not(.rz-dialog-confirm):not(.rz-dialog-alert) {
+        height: 100% !important;
+    }
+
+    .rz-dialog-content {
+        height: 100%;
+        padding: 0 !important;
+    }
+}
+
+@media (max-width: 1280px) {
+    .rz-dialog {
+        width: 100% !important;
+        height: 100% !important;
+    }
+    
+    .rz-dialog-content {
+        height: 100%;
+        padding: 0 !important;
+    }
 }

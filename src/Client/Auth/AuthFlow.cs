@@ -56,6 +56,15 @@ public class AuthFlow
     }
     
     /// <summary>
+    /// Перенаправление на страницу 404.
+    /// </summary>
+    public void NotFound()
+    {
+        var notFoundUrl = _navigation.ToAbsoluteUri($"{_httpClient.BaseAddress}404");
+        _navigation.NavigateTo(notFoundUrl.ToString(), true, true);
+    }
+    
+    /// <summary>
     /// Обновление токенов.
     /// </summary>
     /// <returns>True, если токены обновлены, иначе false.</returns>

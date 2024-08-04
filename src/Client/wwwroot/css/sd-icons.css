@@ -1,0 +1,7 @@
+.sd-add-icon {
+    mask: url('data:image/svg+xml,<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5V19M5 12H19" stroke="%23F2F2F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+}
+
+.sd-edit-icon {
+    mask: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.39668 15.0964C2.43497 14.7518 2.45411 14.5795 2.50624 14.4185C2.55249 14.2756 2.61784 14.1396 2.70051 14.0143C2.79369 13.873 2.91627 13.7504 3.16142 13.5052L14.1667 2.5C15.0871 1.57953 16.5795 1.57953 17.5 2.5C18.4205 3.42048 18.4205 4.91286 17.5 5.83334L6.49475 16.8386C6.2496 17.0837 6.12702 17.2063 5.98572 17.2995C5.86035 17.3821 5.72439 17.4475 5.58152 17.4937C5.42048 17.5459 5.24819 17.565 4.90362 17.6033L2.08331 17.9167L2.39668 15.0964Z" stroke="%23F2F2F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+}

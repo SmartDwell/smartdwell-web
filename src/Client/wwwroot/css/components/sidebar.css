@@ -35,7 +35,7 @@ header {
     display: flex;
 }
 
-.sidebar-icon {
+.sidebar-icon, .sd-icon {
     background-color: var(--sidebar-icon-color);
     width: 24px;
     height: 24px;
@@ -66,7 +66,7 @@ header {
     color: var(--light-text-color);
     transition: transform 0.3s ease, margin-left 0.3s ease;
 
-    margin-top: 30px;
+    margin-top: 20px;
 }
 
 .sidebar-list {
@@ -121,7 +121,7 @@ header {
     padding-left: 0;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 1280px) {
     .sidebar-wrapper {
         width: 0;
         padding: 0;
@@ -137,6 +137,7 @@ header {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        margin-bottom: 20px;
     }
 
     .header-mobile svg {
@@ -156,7 +157,7 @@ header {
     }
 
     .sidebar.open {
-        width: 300px;
+        width: 280px;
         left: 20px;
         transform: translateX(0);
     }
