@@ -1,9 +1,4 @@
-@using Client.Auth
-@using Contracts.Roles
 @using Contracts.Users
-
-@inject NotificationService NotificationService
-@inject AuthHttpClientFactory AuthHttpClientFactory
 
 <div class="user-update-panel user-change-panel justify-content-between">
     <UserForm SelectedUser="@SelectedUser"
@@ -14,7 +9,6 @@
 
 @code {
     private HttpClient _client = default!;
-    private List<RoleBaseDto> _roles = [];
     private bool _saveButtonDisabled;
     
     /// <summary>
@@ -40,30 +34,4 @@
     /// </summary>
     [Parameter, EditorRequired] 
     public Action? OnDelete { get; set; }
-    
-    protected override void OnInitialized()
-    {
-        _client = AuthHttpClientFactory.CreateAuthorizedBaseClient();
-        base.OnInitialized();
-    }
-    
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _roles = (await LoadRoles()).Select(role => new RoleBaseDto
-            {
-                Id = role.Id,
-                Name = role.Name
-            }).ToList();
-            StateHasChanged();
-        }
-        await base.OnAfterRenderAsync(firstRender);
-    }
-    
-    private async Task<List<RoleDto>> LoadRoles()
-    {
-        var response = await _client.GetAsync(RouteConstants.RolesData.GetRolesUrl);
-        return await response.Content.ReadFromJsonAsync<List<RoleDto>>() ?? [];
-    }
 }

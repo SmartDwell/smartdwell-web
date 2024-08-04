@@ -5,7 +5,7 @@
 @inject NotificationService NotificationService
 @inject AuthHttpClientFactory AuthHttpClientFactory
 
-<RadzenTemplateForm TItem="UserPutDto?" Data="@SelectedUser"
+<RadzenTemplateForm TItem="UserPutDto" Data="@SelectedUser"
                     InvalidSubmit="args => Console.WriteLine(args)"
                     Submit="@(_ => SaveUserChanges())"
                     class="d-flex flex-column justify-content-between h-100">
@@ -16,21 +16,21 @@
                     Фамилия <span class="required">*</span>
                 </label>
                 <RadzenTextBox @bind-Value="@SelectedUser.Surname" Name="Surname" Style="width: 100%;"/>
-                <RadzenDataAnnotationValidator Component="Surname" />
+                <RadzenDataAnnotationValidator Component="Surname"/>
             </div>
             <div class="d-flex flex-column">
                 <label class="user-textbox-title">
                     Имя <span class="required">*</span>
                 </label>
                 <RadzenTextBox @bind-Value="@SelectedUser.Name" Name="Name" Style="width: 100%;"/>
-                <RadzenDataAnnotationValidator Component="Name" />
+                <RadzenDataAnnotationValidator Component="Name"/>
             </div>
             <div class="d-flex flex-column">
                 <label class="user-textbox-title">
                     Отчество
                 </label>
                 <RadzenTextBox @bind-Value="@SelectedUser.Patronymic" Name="Patronymic" Style="width: 100%;"/>
-                <RadzenDataAnnotationValidator Component="Patronymic" />
+                <RadzenDataAnnotationValidator Component="Patronymic"/>
             </div>
         </div>
         <div class="user-personal-info-part">
@@ -39,14 +39,14 @@
                     Номер телефона <span class="required">*</span>
                 </label>
                 <RadzenTextBox @bind-Value="@SelectedUser.Phone" Name="Phone" Style="width: 100%;"/>
-                <RadzenDataAnnotationValidator Component="Phone" />
+                <RadzenDataAnnotationValidator Component="Phone"/>
             </div>
             <div class="d-flex flex-column w-100">
                 <label class="user-textbox-title">
                     Электронная почта <span class="required">*</span>
                 </label>
                 <RadzenTextBox @bind-Value="@SelectedUser.Email" Name="Email" Style="width: 100%;"/>
-                <RadzenDataAnnotationValidator Component="Email" />
+                <RadzenDataAnnotationValidator Component="Email"/>
             </div>
         </div>
         <div class="d-flex flex-column">
@@ -54,12 +54,12 @@
                 Роль <span class="required">*</span>
             </label>
             <RadzenDropDown TValue="RoleBaseDto" @bind-Value="@SelectedUser.Role" Data="@_roles"
-                            Name="Role" Style="width: 100%;" TextProperty="Name" />
-            <RadzenDataAnnotationValidator Component="Role" />
+                            Name="Role" Style="width: 100%;" TextProperty="Name"/>
+            <RadzenDataAnnotationValidator Component="Role"/>
         </div>
         <span class="required" style="font-size: 12px;">
-                * - обязательные поля
-            </span>
+            * - обязательные поля
+        </span>
     </div>
     <div class="user-form-footer">
         <div class="d-flex flex-row align-items-center gap-3">
@@ -69,11 +69,11 @@
                 <ChildContent>
                     @if (_saveButtonDisabled)
                     {
-                    <div class="spinner-border text-light" role="status"></div>
+                        <div class="spinner-border text-light" role="status"></div>
                     }
                     else
                     {
-                    <span>Сохранить</span>
+                        <span>Сохранить</span>
                     }
                 </ChildContent>
             </RadzenButton>
@@ -83,9 +83,20 @@
         </div>
         @if (SelectedUser.Id.HasValue)
         {
-            <RadzenButton Text="Удалить" Style="width: max-content;"
+            <RadzenButton Style="width: max-content;"
                           ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large"
-                          Click="@DeleteUser"/>
+                          Click="@DeleteUser">
+                <ChildContent>
+                    @if (_deleteButtonDisabled)
+                    {
+                        <div class="spinner-border text-light" role="status"></div>
+                    }
+                    else
+                    {
+                        <span>Удалить</span>
+                    }
+                </ChildContent>
+            </RadzenButton>
         }
     </div>
 </RadzenTemplateForm>
@@ -94,12 +105,13 @@
     private List<RoleBaseDto> _roles = [];
     private HttpClient _client = default!;
     private bool _saveButtonDisabled;
-    
+    private bool _deleteButtonDisabled;
+
     /// <summary>
     /// Выбранный пользователь.
     /// </summary>
-    [Parameter, EditorRequired] 
-    public UserPutDto SelectedUser { get; set; } = default!;
+    [Parameter, EditorRequired]
+    public UserPutDto SelectedUser { get; set; } = new();
     
     /// <summary>
     /// Событие сохранения изменений.
@@ -170,6 +182,7 @@
     private async void DeleteUser()
     {
         if (!SelectedUser.Id.HasValue) return;
+        _deleteButtonDisabled = true;
         
         var response = await _client.DeleteAsync(RouteConstants.UserData.DeleteUserUrl(SelectedUser.Id.Value));
         if (!response.IsSuccessStatusCode)
@@ -183,10 +196,12 @@
             OnCancel?.Invoke();
             ShowSuccessNotification("Пользователь удален.");
         }
+        
+        _deleteButtonDisabled = false;
+        StateHasChanged();
     }
     
     #region Notifications
-
     
     private void ShowSuccessNotification(string? message = null)
     {

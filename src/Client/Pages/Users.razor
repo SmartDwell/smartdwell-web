@@ -83,7 +83,7 @@ else
                                     {
                                         <div class="mobile-toggle-panel d-flex align-items-center ms-3">
                                             <span class="sd-icon sd-edit-icon user-edit-icon"
-                                                  @onclick="@ShowEditUserDialog"></span>
+                                                  @onclick="() => ShowEditUserDialog(_selectedUser)"></span>
                                         </div>
                                     }
                                 </div>
@@ -250,10 +250,12 @@ else
                       OnDelete="async () => { await InitUserList(); ds.Close(); }" />);
     }
     
-    private async void ShowEditUserDialog()
+    private async void ShowEditUserDialog(UserPutDto? userPutDto)
     {
+        if (userPutDto is null) return;
+        
         await DialogService.OpenAsync(string.Empty, ds => 
-            @<UserPut SelectedUser="@_selectedUser"
+            @<UserPut SelectedUser="@userPutDto"
                       OnSave="async user => { await AfterSaveUserChanges(user); ds.Close(); }"
                       OnDelete="async () => { await InitUserList(); ds.Close(); }"
                       OnCancel="() => { ClearSelectedUser(); ds.Close(); }" />);
